@@ -1,0 +1,17 @@
+# User data for the builder instance, the main postgis instance, and the jump server instance, see
+
+# User Data for creating a PostGIS database on the NVME SSD drive of an instance, assumes there is in
+# fact, an NVME drive on the instance
+# Resource: https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file
+data "template_file" "postgis-user-data" {
+  template = file("./../modules/database_instances/user_data/build_std_postgis.sh")
+}
+
+data "template_file" "postgis-builder-user-data" {
+  template = file("./../modules/database_instances/user_data/build_nvme_postgis.sh")
+}
+
+# User data for jump server - adds some basic utilities to a plain AWS Linux EC2 instance
+data "template_file" "jump-user-data" {
+  template = file("./../modules/database_instances/user_data/build_jump_server.sh")
+}

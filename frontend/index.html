@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+      <title>OpenLayers</title>
+      <link rel="stylesheet" href="https://openlayers.org/en/latest/css/ol.css" type="text/css">
+      <link rel="stylesheet" href="./main.css" type="text/css">
+    </head>
+    <body> 
+    
+    <div class="topnav">
+        <a class="pointer" onclick="toggle_about()"> About </a>
+    </div>
+
+    <div id="map" onkeydown="keyboard_navig(event)" tabindex="0"></div>
+    
+    <div style="display:none"  class="overlay" id="overlay" onclick="toggle_about()"></div>
+
+    <div style="visibility:hidden;" class="overlay" id="about-overlay">
+        <div class="center">
+
+          <h1>About</h1>
+          <hr style="height:2px;border-width:0;color:#204068;background-color:#204068">
+          <p>
+            This page allows you to generate and share dynamic vector layers built on top of OpenStreetMap (OSM). 
+            Each object shown on the map has a series of tags associated with it, using the rules tab, you
+            can define rules to select a subset of those objects.
+            <hr>
+            Combine one or more rules to create a custom layer, after your layer has been submitted, you'll
+            receive a unique ID for the layer that you can use to share your map.
+            <br><br>
+            <b>https://tiles.maphub.dev/index.html?id=<font color="red">${your_layer_id}</font></b>
+          </p>
+        </div>
+    </div>
+
+    
+    <div id="analysispanel" class="analysispanel main-container">
+
+      <div class="flex-container"> 
+        
+      
+        <!-- Recent Objects  -->
+        <div id="recent-obj" class="flex-container panel">
+          <form>
+            <p>
+              <input type="text" id="object-search" onkeyup="search_tags()" placeholder="Search for Tags..." title="Type in a name">
+            </p>
+          </form>
+          <br>
+          <ul id="recent-objects" style="list-style-type:none;"></ul> 
+        </div>
+    </div>
+
+    <!-- For Faster Load?? -->
+    <script src="./bundle.js"></script>
+    <script src="./utility.js"></script>
+  </body>
+</html>
+
+
