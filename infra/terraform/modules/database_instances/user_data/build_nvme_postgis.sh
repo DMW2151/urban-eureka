@@ -31,10 +31,10 @@ sudo apt-get clean
 # Initialize a PostGIS database with a non superuser user, `osm_worker` - get password from parameter store...
 export OSM_WORKER_PGPASSWORD=`(aws ssm get-parameters --names osm_pg__worker_pwd --region=us-east-1 | jq '.Parameters | first | .Value')`
 
+
 sudo -i -u postgres createuser osm_worker &&\
 sudo -i -u postgres createdb geospatial_core -O postgres &&\
 sudo -i -u postgres psql -d geospatial_core -U postgres -c "ALTER USER osm_worker WITH password '$OSM_WORKER_PGPASSWORD';"
-
 
 # Add Extenstions for OSM2PGSQL
 sudo -i -u postgres psql -d geospatial_core -c "CREATE EXTENSION postgis;" &&\
@@ -50,13 +50,18 @@ sudo -i -u postgres psql -d geospatial_core -c "CREATE EXTENSION hstore;"
 # https://osm2pgsql.org/doc/manual.html#tuning-the-postgresql-server
 
 echo """
-    ALTER SYSTEM SET shared_buffers TO '4GB';
-    ALTER SYSTEM SET work_mem TO '256MB';
+    ALTER SYSTEM SET shared_buffers TO '1GB';
+    ALTER SYSTEM SET work_mem TO '64MB';
     ALTER SYSTEM SET maintenance_work_mem TO '10GB';
     ALTER SYSTEM SET autovacuum_work_mem TO '2GB';
     ALTER SYSTEM SET random_page_cost TO 1.0;
     ALTER SYSTEM SET wal_level TO minimal;
     ALTER SYSTEM SET full_page_writes TO off;
+    ALTER SYSTEM SET max_wal_size = '10GB';
+    ALTER SYSTEM SET fsync TO off;
+    ALTER SYSTEM SET checkpoint_completion_target = 0.9;
+    ALTER SYSTEM SET max_wal_senders = 0;
+    ALTER SYSTEM SET synchronous_commit = off;
 """ > ./postgis_system_settings.sql
 
 # Add new System Settings and stop the db server before changing the data directory...

@@ -72,7 +72,7 @@ func init() {
 
 	// [TODO]: Set this to be configurable...
 	xray.SetLogger(
-		xraylog.NewDefaultLogger(os.Stdout, xraylog.LogLevelInfo),
+		xraylog.NewDefaultLogger(os.Stdout, xraylog.LogLevelDebug),
 	)
 
 	// Env specific environment variables, this `AWS_EXECUTION_ENV` will exist

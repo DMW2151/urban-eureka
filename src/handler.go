@@ -166,7 +166,9 @@ func (h *PBFHandler) generateTile(ctx context.Context, treq *TileRequest) (*Tile
 		if c, ok := h.Options["REDIS__USE_CACHE"]; ok {
 			if c.(bool) && (err == nil) {
 				xray.Capture(ctx, "tiles-api.redis-set", func(ctx context.Context) error {
-					h.setCache(ctx, treq, tresp) // [X_RAY] Cache to Redis
+					// [X_RAY] Cache to Redis
+					// Would be nice if this could be async, oh well, not worth the hassle...
+					h.setCache(ctx, treq, tresp)
 					return nil
 				})
 
@@ -378,6 +380,7 @@ func (h *PBFHandler) HandleTileRequests(w http.ResponseWriter, r *http.Request) 
 			w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		return
 	}
 
 	if err == nil {

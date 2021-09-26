@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Dustin Wilson" />
+  <meta name="dcterms.date" content="2021-09-25" />
+  <title>Database Benchmarking</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 10px;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #cccccc; background-color: #303030; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ffcfaf; } /* Alert */
+    code span.an { color: #7f9f7f; font-weight: bold; } /* Annotation */
+    code span.at { } /* Attribute */
+    code span.bn { color: #dca3a3; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #f0dfaf; } /* ControlFlow */
+    code span.ch { color: #dca3a3; } /* Char */
+    code span.cn { color: #dca3a3; font-weight: bold; } /* Constant */
+    code span.co { color: #7f9f7f; } /* Comment */
+    code span.cv { color: #7f9f7f; font-weight: bold; } /* CommentVar */
+    code span.do { color: #7f9f7f; } /* Documentation */
+    code span.dt { color: #dfdfbf; } /* DataType */
+    code span.dv { color: #dcdccc; } /* DecVal */
+    code span.er { color: #c3bf9f; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #c0bed1; } /* Float */
+    code span.fu { color: #efef8f; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #7f9f7f; font-weight: bold; } /* Information */
+    code span.kw { color: #f0dfaf; } /* Keyword */
+    code span.op { color: #f0efd0; } /* Operator */
+    code span.ot { color: #efef8f; } /* Other */
+    code span.pp { color: #ffcfaf; font-weight: bold; } /* Preprocessor */
+    code span.sc { color: #dca3a3; } /* SpecialChar */
+    code span.ss { color: #cc9393; } /* SpecialString */
+    code span.st { color: #cc9393; } /* String */
+    code span.va { } /* Variable */
+    code span.vs { color: #cc9393; } /* VerbatimString */
+    code span.wa { color: #7f9f7f; font-weight: bold; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Database Benchmarking</h1>
+<p class="author">Dustin Wilson</p>
+<p class="date">September 25, 2021</p>
+</header>
+<p>The following document describes benchmarks comparing Graviton2-backed instances and x86-backed instances for the purpose of serving dynamic tiles from a PostGIS database server. The specs of these tests may not be a perfect analogue for realistic tile generation, but they should shed light on the relative performance of several candidate database configurations.</p>
+<p>From these tests I’d like to understand the performance benefit of hosting a PostGIS DB on a graviton backed EC2 instance for this specific use case. I’d also like to evaluate the difference in performance between DBs hosted on <code>NVME</code> drives (offered by the <code>m6gd</code> family of instances) and standard <code>gp3</code> and <code>gp2</code> volumes.</p>
+<hr />
+<h2 id="result-summary">Result Summary</h2>
+<ol type="1">
+<li><p>PostGIS instances hosted on <code>m6gd.large</code> offer better tile-serving and general performance than an equivalent x86 instance (<code>t3.large</code>).</p>
+<ul>
+<li>This project is worth pursuing.</li>
+</ul></li>
+<li><p>There is minimal distinction in tile-serving performance between a DB running on ephemeral <code>NVME</code> or <code>gp3</code> volume.</p>
+<ul>
+<li>Rather than (dangerously) relying on ephemeral NVME storage, I will provision a <code>gp3</code> instance to host my DB.</li>
+</ul></li>
+<li><p>There is minimal distinction in tile-serving performance between the default PostGIS parameters and “optimized” parameters. These parameters may be geared for analytical, rather than transactional workloads.</p>
+<ul>
+<li>I will proceed with PostGIS suggested parameters, seems that they will do no harm during periods of light load and may boost performance under heavy load.</li>
+</ul></li>
+<li><p>Loading OSM data to PostgreSQL is memory intensive. Performance is difficult to isolate because the process involves CPU, disk, and memory heavy components. In general, a <code>m6g.4xlarge</code> instance can load a small (<code>3GB</code>) sized OSM extract <strong>3x</strong> faster than a <code>m6g.large</code> instance.</p>
+<ul>
+<li>I’ll use a large, spot instance to load the OSM data to PostgreSQL and dump it to a DB runningg on a more affordable instance.</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="system-setup">0.1 System Setup</h2>
+<p>This test compares the following instances. Both are general purpose instances which provide a balance of compute, memory and networking resources.</p>
+<h3 id="test-graviton-and-x86-instances">0.1 Test Graviton and X86 Instances</h3>
+<h4 id="figure-0.1.1---instances-evaluated">Figure 0.1.1 - Instances Evaluated</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Instance</th>
+<th><code>m6gd.large</code></th>
+<th><code>t3.large</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>vCPU</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Memory (GiB)</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr class="odd">
+<td>Instance Storage (GIB)</td>
+<td>1 x 118 NVMe SSD</td>
+<td>EBS-Only</td>
+</tr>
+<tr class="even">
+<td>Network Bandwidth (Gbps)</td>
+<td>Up to 10</td>
+<td>n/a</td>
+</tr>
+<tr class="odd">
+<td>EBS Bandwidth (Mbps)</td>
+<td>Up to 4,750</td>
+<td>Up to 5</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Note, The <code>m6gd.large</code> also includes custom built AWS Graviton2 Processor with 64-bit Arm cores. The <code>t3.large</code> includes Up to 3.1 GHz Intel Xeon Platinum Processor and Intel AVX, Intel AVX2, Intel Turbo. Both instances are EBS optimized and offer enhanced networking.</li>
+</ul>
+<h3 id="postgresql-software-version">0.2 PostgreSQL Software Version</h3>
+<p>Both instances (<code>m6gd</code> and <code>t3.large</code>) are running <code>psql (13.4 (Ubuntu 13.4-1.pgdg20.04+1))</code>, installed via the following user-data script. A new database (<code>geospatial_core</code>) and user (<code>osm_worker</code>) were created for the tests.</p>
+<h4 id="figure-0.2.1---postgresql-initialization">Figure 0.2.1 - PostgreSQL Initialization</h4>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash numberLines"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">#!/bin/sh</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="co"># Add PostgreSQL Apt Repo</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="fu">sudo</span> sh <span class="at">-c</span> <span class="st">&#39;echo &quot;deb http://apt.postgresql.org/pub/repos/apt\</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="st">    $(lsb_release -cs)-pgdg main&quot; &gt; /etc/apt/sources.list.d/pgdg.list&#39;</span> <span class="kw">&amp;&amp;</span><span class="dt">\</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>    <span class="fu">wget</span> <span class="at">--quiet</span> <span class="at">-O</span> <span class="at">-</span> https://www.postgresql.org/media/keys/ACCC4CF8.asc <span class="kw">|</span> <span class="fu">sudo</span> apt-key add <span class="at">-</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="co"># Install PostgreSQL + PostGIS + Geospatial Utilities</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="fu">sudo</span> apt-get update <span class="kw">&amp;&amp;</span><span class="dt">\</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a><span class="fu">sudo</span> apt-get <span class="at">-y</span> install <span class="dt">\</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a>    postgresql-13 <span class="dt">\</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a>    postgresql-client-13 <span class="dt">\</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>    postgis postgresql-13-postgis-3 <span class="dt">\</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a>    gdal-bin <span class="dt">\</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a>    osm2pgsql <span class="kw">&amp;&amp;</span><span class="dt">\</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a><span class="fu">sudo</span> apt-get clean</span></code></pre></div>
+<h2 id="benchmarking-with-pgbench---basic-tests">1.0 - Benchmarking With PGBench - Basic Tests</h2>
+<p>The first series of tests uses a utility included with most PostgreSQL distributions called <code>pgbench</code>.</p>
+<blockquote>
+<p><code>pgbench</code> is a simple program for running benchmark tests on PostgreSQL. It runs the same sequence of SQL commands over and over, possibly in multiple concurrent database sessions, and then calculates the average transaction rate (transactions per second).</p>
+</blockquote>
+<p>Without any specific transaction specified, <code>pgbench</code> defaults to a series of very basic <code>SELECT</code>, <code>INSERT</code>, and <code>UPDATE</code> statements. To run this style of benchmarking, the following script was run against the postgreSQL/postGIS database on each ot the test instances.</p>
+<h4 id="figure-1.0.1---basic-pgbench-benchmarking">Figure 1.0.1 - Basic pgbench Benchmarking</h4>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash numberLines"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">#! /bin/sh</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">pgbench</span> <span class="at">-d</span> geospatial_core <span class="at">-U</span> osm_worker <span class="at">-i</span> <span class="kw">&amp;&amp;</span><span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>     <span class="ex">pgbench</span> <span class="at">-c</span> 10 <span class="at">-j</span> 2 <span class="at">-d</span> geospatial_core <span class="at">-U</span> osm_worker <span class="at">-t</span> 10000</span></code></pre></div>
+<p>The test asks the database to use 2 threads (<code>-j</code>) to handle 10 clients (<code>-c</code>) running 10000 transactions (<code>-t</code>) each. The table below shows the results of tests run on an <code>m6gd</code> instance with the PostgreSQL data-directory located on <code>gp3</code>, <code>gp2</code>, and <code>NVME SSD</code> volumes and a <code>t3</code> instance using <code>gp3</code>.</p>
+<p>For all tests, the default <code>gp3</code> volume configuration was used (3000 IOP/s, 125MB/s throughput). Given that <code>gp3</code> volumes are cheaper than <code>gp2</code> (<a href="https://aws.amazon.com/blogs/storage/migrate-your-amazon-ebs-volumes-from-gp2-to-gp3-and-save-up-to-20-on-costs/">aws blog on gp2 and gp3</a>), <code>gp3</code> strictly dominates the <code>gp2</code> volume and I limited further testing with this volume type.</p>
+<h4 id="figure-1.0.2---test-results---basic-pgbench-benchmarking">Figure 1.0.2 - Test Results - Basic pgbench Benchmarking</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Instance</th>
+<th>PostgreSQL Data Directory</th>
+<th>Tx/Second</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>M6GD</td>
+<td>GP2</td>
+<td>620.65</td>
+</tr>
+<tr class="even">
+<td>M6GD</td>
+<td>GP3</td>
+<td>885.33</td>
+</tr>
+<tr class="odd">
+<td>M6GD</td>
+<td>NVME</td>
+<td>862.93</td>
+</tr>
+<tr class="even">
+<td>T3</td>
+<td>GP3</td>
+<td>732.00</td>
+</tr>
+</tbody>
+</table>
+<p>If we take these results as fact, it suggests that the<code>gp3</code> and ephemeral <code>NVME</code> disk performed very similarly. Unsurprisingly, the <code>gp2</code> instance lagged behind by a great deal (25%) in transactions per second. The <code>gp3</code> instance attached to a <code>t3.large</code> gave middling results. It’s unclear what specifically drives this difference. Unlike <code>dd</code>, <code>pgbench</code> is meant for testing <code>Postgres</code> rather than raw disk performance. These tests could be augmented with results of <code>dd</code> to understand the true difference, if any, between <code>gp3</code> volumes attached to each of these instances.</p>
+<h2 id="benchmarking-with-pgbench---workload-specific-tests">1.0 - Benchmarking With PGBench - Workload Specific Tests</h2>
+<p>While the default <code>pgbench</code> test easily runs hundreds of transactions per second, our workload will be more memory intensive than a series of <code>SELECT</code> statements. To benchmark specific workloads, <code>pgbench</code> allows the user to define test transactions to run against the database.</p>
+<h4 id="figure-1.1.1-delaware-tables-and-geospatial-indexes">Figure 1.1.1 – Delaware Tables and Geospatial Indexes</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dela_line</td>
+<td>33 MB</td>
+</tr>
+<tr class="even">
+<td>dela_nodes</td>
+<td>82 MB</td>
+</tr>
+<tr class="odd">
+<td>dela_point</td>
+<td>4216 kB</td>
+</tr>
+<tr class="even">
+<td>dela_polygon</td>
+<td>34 MB</td>
+</tr>
+<tr class="odd">
+<td>dela_rels</td>
+<td>2912 kB</td>
+</tr>
+<tr class="even">
+<td>dela_roads</td>
+<td>4392 kB</td>
+</tr>
+<tr class="odd">
+<td>dela_ways</td>
+<td>52 MB</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Table</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dela_line_way_idx</td>
+<td>index</td>
+<td>dela_line</td>
+<td>16 MB</td>
+</tr>
+<tr class="even">
+<td>dela_point_way_idx</td>
+<td>index</td>
+<td>dela_point</td>
+<td>1992 kB</td>
+</tr>
+<tr class="odd">
+<td>dela_polygon_way_idx</td>
+<td>index</td>
+<td>dela_polygon</td>
+<td>10024 kB</td>
+</tr>
+<tr class="even">
+<td>dela_roads_way_idx</td>
+<td>index</td>
+<td>dela_roads</td>
+<td>1312 kB</td>
+</tr>
+</tbody>
+</table>
+<p>The query below generates 2 random points in the bounding box of the state of Delaware. From there, the query creates an envelope from those points, segments, simplifies, and thresholds all shapes in that envelope, and then creates a tile to return to the user. In a real query, the CTE to generate <code>pts</code> would not exist, instead our API would pass along the points of the envelope to use. I suspect this has minimal effect on the end results of the test.</p>
+<h4 id="figure-1.1.2-sample-tile-generation-query-de_tile_bench.sql">Figure 1.1.2 – Sample Tile Generation Query (<code>de_tile_bench.sql</code>)</h4>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource sql numberLines"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">WITH</span> pts <span class="kw">AS</span> (</span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="kw">SELECT</span> st_setsrid(</span>
+<span id="cb3-3"><a href="#cb3-3"></a>        ST_GeneratePoints(</span>
+<span id="cb3-4"><a href="#cb3-4"></a>            st_geomfromtext(</span>
+<span id="cb3-5"><a href="#cb3-5"></a>                <span class="st">&#39;POLYGON ((</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="st">                    -76.16379349 38.29608890, -76.16379349 39.86611630,</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="st">                    -74.95903281 39.86611630, -74.95903281 38.29608890, -76.16379349 38.29608890</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="st">                ))&#39;</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a>            ) , <span class="dv">2</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>        ), <span class="dv">4326</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>    ) <span class="kw">AS</span> rdpts</span>
+<span id="cb3-12"><a href="#cb3-12"></a>)</span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="kw">SELECT</span> ST_AsMVT(a.<span class="op">*</span>) <span class="kw">FROM</span> (</span>
+<span id="cb3-14"><a href="#cb3-14"></a>    <span class="kw">SELECT</span> ST_AsMVTGeom(</span>
+<span id="cb3-15"><a href="#cb3-15"></a>        st_segmentize(</span>
+<span id="cb3-16"><a href="#cb3-16"></a>            st_simplify(</span>
+<span id="cb3-17"><a href="#cb3-17"></a>                st_transform(c2.way, <span class="dv">4326</span>), <span class="fl">0.001</span>, <span class="kw">false</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a>            ), <span class="fl">0.01</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a>        ),</span>
+<span id="cb3-20"><a href="#cb3-20"></a>        st_transform(</span>
+<span id="cb3-21"><a href="#cb3-21"></a>            st_envelope(</span>
+<span id="cb3-22"><a href="#cb3-22"></a>                st_transform(pts.rdpts, <span class="dv">3857</span>)</span>
+<span id="cb3-23"><a href="#cb3-23"></a>            ), <span class="dv">4326</span></span>
+<span id="cb3-24"><a href="#cb3-24"></a>        ),</span>
+<span id="cb3-25"><a href="#cb3-25"></a>        <span class="kw">extent</span><span class="op">=&gt;</span><span class="dv">4096</span>,</span>
+<span id="cb3-26"><a href="#cb3-26"></a>        buffer<span class="op">=&gt;</span><span class="dv">256</span></span>
+<span id="cb3-27"><a href="#cb3-27"></a>    )</span>
+<span id="cb3-28"><a href="#cb3-28"></a>    <span class="kw">FROM</span> <span class="kw">public</span>.dela_polygon c2, pts</span>
+<span id="cb3-29"><a href="#cb3-29"></a>    <span class="kw">WHERE</span> c2.way &amp;&amp; st_envelope(st_transform(pts.rdpts, <span class="dv">3857</span>))</span>
+<span id="cb3-30"><a href="#cb3-30"></a>) a;</span></code></pre></div>
+<h4 id="figure-1.1.3---delaware-benchmarking-test">Figure 1.1.3 - Delaware Benchmarking Test</h4>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash numberLines"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">#! /bin/sh</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">sudo</span> <span class="at">-su</span> postgres pgbench <span class="at">-i</span> <span class="kw">&amp;&amp;</span><span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>    <span class="ex">pgbench</span> <span class="at">-c</span> 10 <span class="at">-j</span> 2 <span class="at">-t</span> 1000 <span class="at">-U</span> osm_worker <span class="at">-d</span> geospatial_core <span class="at">-f</span> de_tile_bench.sql</span></code></pre></div>
+<p>I performed these tests using the following instances and relations. It should be noted that <code>polygon</code> and <code>point</code> differ in size by a factor of 10, and the performance of aggregation on polygons may be distinctly different that on points. In all cases, <code>NVME</code> and <code>gp3</code> on <code>mg6d</code> performed very near identically, while the <code>T3</code> instance lagged behind again.</p>
+<h4 id="figure-1.1.4---test-results---delaware-benchmarking-test">Figure 1.1.4 - Test Results - Delaware Benchmarking Test</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Instance</th>
+<th>PostgreSQL Data Directory</th>
+<th>PostgreSQL Settings</th>
+<th>Relation</th>
+<th>Tx/Second</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>M6GD</td>
+<td>GP3</td>
+<td>Basic</td>
+<td>point</td>
+<td>74.309501</td>
+</tr>
+<tr class="even">
+<td>M6GD</td>
+<td>NVME</td>
+<td>Basic</td>
+<td>point</td>
+<td>73.919339</td>
+</tr>
+<tr class="odd">
+<td>T3</td>
+<td>GP3</td>
+<td>Basic</td>
+<td>point</td>
+<td>46.489644</td>
+</tr>
+<tr class="even">
+<td>M6GD</td>
+<td>GP3</td>
+<td>Basic</td>
+<td>polygon</td>
+<td>17.332670</td>
+</tr>
+<tr class="odd">
+<td>M6GD</td>
+<td>NVME</td>
+<td>Basic</td>
+<td>polygon</td>
+<td>17.252142</td>
+</tr>
+<tr class="even">
+<td>T3</td>
+<td>-</td>
+<td>-</td>
+<td>polygon</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>I performed the same suite of tests from <code>1.1.4</code> again using a series of <code>GIS Optimized Parameters</code> suggested by the osm2pgsql and PostGIS documentation. The parameters used are displayed below in <code>1.1.5</code>. At this scale, these parameters provided no additional performance boost relative to PostGIS default parameters. This makes sense, as these parameters seemed to be for tuning a DB doing large-scale geospatial analytics.</p>
+<h4 id="figure-1.1.5---postgis-documentation-suggested-parameters">Figure 1.1.5 - PostGIS documentation suggested parameters</h4>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource sql numberLines"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> shared_buffers <span class="kw">TO</span> <span class="st">&#39;4GB&#39;</span>;</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> work_mem <span class="kw">TO</span> <span class="st">&#39;256MB&#39;</span>;</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> maintenance_work_mem <span class="kw">TO</span> <span class="st">&#39;10GB&#39;</span>;</span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> autovacuum_work_mem <span class="kw">TO</span> <span class="st">&#39;2GB&#39;</span>;</span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> random_page_cost <span class="kw">TO</span> <span class="fl">1.0</span>;</span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> wal_level <span class="kw">TO</span> minimal;</span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> full_page_writes <span class="kw">TO</span> <span class="kw">off</span>;</span></code></pre></div>
+<h4 id="figure-1.1.6---test-results---delaware-benchmarking-test-using-gis-optimized-parameters">Figure 1.1.6 - Test Results - Delaware Benchmarking Test Using <code>GIS Optimized</code> Parameters</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Instance</th>
+<th>PostgreSQL Data Directory</th>
+<th>PostgreSQL Settings</th>
+<th>Relation</th>
+<th>Tx/Second</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>M6GD</td>
+<td>GP3</td>
+<td>GIS</td>
+<td>point</td>
+<td>74.329485</td>
+</tr>
+<tr class="even">
+<td>M6GD</td>
+<td>NVME</td>
+<td>GIS</td>
+<td>point</td>
+<td>75.358891</td>
+</tr>
+<tr class="odd">
+<td>T3</td>
+<td>GP3</td>
+<td>GIS</td>
+<td>point</td>
+<td>46.689258</td>
+</tr>
+<tr class="even">
+<td>M6GD</td>
+<td>GP3</td>
+<td>GIS</td>
+<td>polygon</td>
+<td>17.622211</td>
+</tr>
+<tr class="odd">
+<td>M6GD</td>
+<td>NVME</td>
+<td>GIS</td>
+<td>polygon</td>
+<td>18.679260</td>
+</tr>
+<tr class="even">
+<td>T3</td>
+<td>-</td>
+<td>-</td>
+<td>polygon</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h2 id="benchmarking-with-osm2pgsql---loading-alabama-osm-extract">2.0 - “Benchmarking” With OSM2PGSQL - Loading Alabama OSM Extract</h2>
+<p>The <a href="https://osm2pgsql.org/doc/manual.html#tuning-the-postgresql-server">osm2pgsql manual</a> recommends specific hardware for ingesting OSM. In general, the recommendations boil down to the following:</p>
+<ul>
+<li>&gt;= 64GB RAM</li>
+<li>&gt;= 8 CPU</li>
+<li>Database hosted on NVME SSD</li>
+</ul>
+<p>First, I considered using an RDS instance, however, RDS instances are significantly more expensive compared to self-hosting the same database server on the equivalent hardware in EC2. For example, the <a href="https://calculator.aws/#/createCalculator/RDSPostgreSQL">AWS Pricing Calculator - RDS</a>gives an estimated cost of ~$260 for a 250GB single-AZ RDS instance hosted on <code>db.m6gd.xlarge</code> (2 VCPU + 16GB RAM). Compare this with the <a href="https://calculator.aws/#/createCalculator/EC2">AWS Pricing Calculator - EC2</a> estimate of ~$140 for an <code>m6gd.xlarge</code> (4VCPU + 16 GB RAM) instance on EC2.</p>
+<h4 id="figure-2.0.12.0.2---db.m6gd.xlarge-rds-vs-ec2-instance-cost">Figure 2.0.1/2.0.2 - db.m6gd.xlarge RDS vs EC2 Instance Cost</h4>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> instance<span class="er">(</span><span class="ex">s</span><span class="kw">)</span> <span class="ex">x</span> 0.318 USD hourly x 730 hours in a month = 232.1400 USD</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">250</span> GB per month x 0.115 USD x 1 instances = 28.75 USD <span class="er">(</span><span class="ex">Storage</span> Cost<span class="kw">)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Including 100GB of GP3 at 3000 IOPs &amp;&amp; 125MB/s for incidental data</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> instances x 0.1808 USD x 730 hours in a month = 131.98 USD <span class="er">(</span><span class="ex">monthly</span> onDemand cost<span class="kw">)</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">100</span> GB x 0.08 USD x 1 instances = 8.00 USD <span class="er">(</span><span class="ex">EBS</span> Storage Cost<span class="kw">)</span> </span></code></pre></div>
+<p>Obviously, there are consequences to choosing to host on EC2 vs. RDS. However, for this application these drawbacks were well worth assuming the additional risk for. Multi-AZ replication, auto-backups, etc. are secondary given that we’re not working with sensitive data and given that this is a hackathon project.</p>
+<p>I did want to consider the possibility of using a spot instance for the initial load and then downgrading to a less powerful instance for serving regular traffic. The figures below compare the results of loading the Alabama OSM dataset on <code>m6gd.large</code> and <code>m6gd.4xlarge</code> spot instances. This may be a bit small for a test to see the real performance benefit from the <code>m6gd.4xlarge</code> instance, but we see on the order of <strong>2x</strong> performance on ingestion and <strong>5x</strong> performance on index creation.</p>
+<h4 id="figure-2.0.3---load-alabama-query">Figure 2.0.3 - Load Alabama Query</h4>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash numberLines"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">#! /bin/sh</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="ex">osm2pgsql</span> <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>    <span class="at">--create</span> <span class="dt">\</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>    <span class="at">-U</span> osm_worker<span class="dt">\</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>    <span class="at">-d</span> geospatial_core <span class="dt">\</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>    <span class="at">-H</span> localhost<span class="dt">\</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>    <span class="at">--cache</span> 4096 <span class="dt">\ </span> <span class="co">## 4096 on m6gd.large, 16384 on m6gd.4xlarge</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a>    <span class="ex">--number-processes</span> 2 <span class="dt">\ </span>## 2 on m6gd.large, 8 on m6gd.4xlarge</span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="ex">--slim</span> <span class="dt">\</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>    <span class="at">--prefix</span><span class="op">=</span>al <span class="dt">\</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>    ~/osm/data/alabama-latest.osm.pbf</span></code></pre></div>
+<h4 id="figure-2.0.4---osm-alabama-import---relevant-statistics---m6gd.large">Figure 2.0.4 - OSM Alabama Import - Relevant Statistics - m6gd.large</h4>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Processing:</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Node</span> stats: total<span class="er">(</span><span class="ex">12397222</span><span class="kw">)</span><span class="ex">,</span> max<span class="er">(</span><span class="ex">9122495491</span><span class="kw">)</span> <span class="er">in</span> <span class="ex">45s</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Way</span> stats: total<span class="er">(</span><span class="ex">1020439</span><span class="kw">)</span><span class="ex">,</span> max<span class="er">(</span><span class="ex">986936599</span><span class="kw">)</span> <span class="er">in</span> <span class="ex">20s</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Relation</span> stats: total<span class="er">(</span><span class="ex">6295</span><span class="kw">)</span><span class="ex">,</span> max<span class="er">(</span><span class="ex">13261703</span><span class="kw">)</span> <span class="er">in</span> <span class="ex">3s</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> indexes on al_roads created in 6s</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> indexes on al_point created in 11s</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> indexes on al_polygon created in 54s</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> indexes on al_line created in 73s</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="ex">Osm2pgsql</span> took 142s overall</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> cache: stored: 12397222<span class="er">(</span><span class="ex">100.00%</span><span class="kw">)</span><span class="ex">,</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="ex">storage</span> efficiency: 50.00% <span class="er">(</span><span class="ex">dense</span> blocks: 0, sparse nodes: 12397222<span class="kw">)</span><span class="ex">,</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="ex">hit</span> rate: 100.00%</span></code></pre></div>
+<h4 id="figure-2.0.5---osm-alabama-import---relevant-statistics---m6gd.4xlarge">Figure 2.0.5 - OSM Alabama Import - Relevant Statistics - m6gd.4xlarge</h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Processing:</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Node</span> stats: total<span class="er">(</span><span class="ex">12397222</span><span class="kw">)</span><span class="ex">,</span> max<span class="er">(</span><span class="ex">9122495491</span><span class="kw">)</span> <span class="er">in</span> <span class="ex">20s</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Way</span> stats: total<span class="er">(</span><span class="ex">1020439</span><span class="kw">)</span><span class="ex">,</span> max<span class="er">(</span><span class="ex">986936599</span><span class="kw">)</span> <span class="er">in</span> <span class="ex">12s</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Relation</span> stats: total<span class="er">(</span><span class="ex">6295</span><span class="kw">)</span><span class="ex">,</span> max<span class="er">(</span><span class="ex">13261703</span><span class="kw">)</span> <span class="er">in</span> <span class="ex">2s</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Index</span> Creation:</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> indexes on al_roads created in 1s</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> indexes on al_point created in 2s</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> indexes on al_polygon created in 11s</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> indexes on al_line created in 14s</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="ex">Osm2pgsql</span> took 62s overall</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> cache: stored: 12397222<span class="er">(</span><span class="ex">100.00%</span><span class="kw">)</span><span class="ex">,</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="ex">storage</span> efficiency: 50.00% <span class="er">(</span><span class="ex">dense</span> blocks: 0, sparse nodes: 12397222<span class="kw">)</span><span class="ex">,</span> </span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="ex">hit</span> rate: 100.00%</span></code></pre></div>
+<h2 id="a.1---additional-comment-on-delaware-benchmarking">A.1 - Additional Comment on Delaware Benchmarking</h2>
+<p>One may argue that the tests performed in <code>1.0</code> are not representative of a real workload due to the small size of the test data. On the contrary, the GIST indexing that PostGIS uses for intersecting shapes scales very well. As the index size increases 10x, 100x, etc, I would not worry about the ability to efficiently access points in (relatively small) user requested regions.</p>
+<p>The bulk of the tile-generation process is contingent on the other aspects of creating a tile, e.g. segmenting, simplifying, and clipping shapes, transforming projections, and aggregating the response in MVT format. This test captures all the core functionality the DB will need to handle for to create a tile.</p>
+<p>As further proof of this fact consider the results of the <code>EXPLAIN ANALYZE</code> in <code>Figure A.1.1</code>. This figure shows the result of one call of <code>de_test_bench.sql</code>. Notice that the indexing to locate relevant features took &lt;10ms, and the aggregation to MVT tile took &gt;50ms.</p>
+<h4 id="figure-a.1.1---explain-analyze---sample-execution-of-delaware-test-query">Figure A.1.1 - EXPLAIN ANALYZE - sample execution of Delaware Test Query</h4>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource sql numberLines"><code class="sourceCode sql"><span id="cb10-1"><a href="#cb10-1"></a>Aggregate (actual <span class="dt">time</span><span class="op">=</span><span class="dv">62</span>.<span class="dv">420</span><span class="op">..</span><span class="fl">62.421</span> <span class="kw">rows</span><span class="op">=</span><span class="dv">1</span> loops<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-2"><a href="#cb10-2"></a>  <span class="op">-&gt;</span>  <span class="kw">Nested</span> <span class="cf">Loop</span> (actual <span class="dt">time</span><span class="op">=</span><span class="dv">0</span>.<span class="dv">478</span><span class="op">..</span><span class="fl">10.051</span> <span class="kw">rows</span><span class="op">=</span><span class="dv">3373</span> loops<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-3"><a href="#cb10-3"></a>        <span class="op">-&gt;</span>  Seq <span class="kw">Scan</span> <span class="kw">on</span> pts (actual <span class="dt">time</span><span class="op">=</span><span class="dv">0</span>.<span class="dv">043</span><span class="op">..</span><span class="fl">0.045</span> <span class="kw">rows</span><span class="op">=</span><span class="dv">1</span> loops<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-4"><a href="#cb10-4"></a>        <span class="op">-&gt;</span>  <span class="kw">Index</span> <span class="kw">Scan</span> <span class="kw">using</span> dela_polygon_way_idx <span class="kw">on</span> dela_polygon c2 (actual <span class="dt">time</span><span class="op">=</span><span class="dv">0</span>.<span class="dv">338</span><span class="op">..</span><span class="fl">8.549</span> <span class="kw">rows</span><span class="op">=</span><span class="dv">3373</span> loops<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-5"><a href="#cb10-5"></a>              <span class="kw">Index</span> Cond: (way &amp;&amp; st_envelope(st_transform(pts.rdpts, <span class="dv">3857</span>)))</span>
+<span id="cb10-6"><a href="#cb10-6"></a></span>
+<span id="cb10-7"><a href="#cb10-7"></a>Planning <span class="dt">Time</span>: <span class="fl">0.419</span> ms</span>
+<span id="cb10-8"><a href="#cb10-8"></a>Execution <span class="dt">Time</span>: <span class="fl">62.581</span> ms</span></code></pre></div>
+<p>In <code>Figure A.1.3</code>, I repeat a query like <code>de_test_bench.sql</code>, but instead use the OSM extract of New Jersey rather than Delaware. New Jersey is a slightly larger, but much denser state and has about 10x the OSM data as Delaware.</p>
+<h4 id="figure-a.1.2-new-jersey-tables-and-geospatial-indexes">Figure A.1.2 – New Jersey Tables and Geospatial Indexes</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>nj_line</td>
+<td>table</td>
+<td>237 MB</td>
+</tr>
+<tr class="even">
+<td>nj_nodes</td>
+<td>table</td>
+<td>596 MB</td>
+</tr>
+<tr class="odd">
+<td>nj_point</td>
+<td>table</td>
+<td>32 MB</td>
+</tr>
+<tr class="even">
+<td>nj_polygon</td>
+<td>table</td>
+<td>269 MB</td>
+</tr>
+<tr class="odd">
+<td>nj_rels</td>
+<td>table</td>
+<td>11 MB</td>
+</tr>
+<tr class="even">
+<td>nj_roads</td>
+<td>table</td>
+<td>30 MB</td>
+</tr>
+<tr class="odd">
+<td>nj_ways</td>
+<td>table</td>
+<td>379 MB</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Table</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>nj_line_way_idx</td>
+<td>index</td>
+<td>nj_line</td>
+<td>111 MB</td>
+</tr>
+<tr class="even">
+<td>nj_point_way_idx</td>
+<td>index</td>
+<td>nj_point</td>
+<td>13 MB</td>
+</tr>
+<tr class="odd">
+<td>nj_polygon_way_idx</td>
+<td>index</td>
+<td>nj_polygon</td>
+<td>125 MB</td>
+</tr>
+<tr class="even">
+<td>nj_roads_way_idx</td>
+<td>index</td>
+<td>nj_roads</td>
+<td>8712 kB</td>
+</tr>
+</tbody>
+</table>
+<p>Analyzing <code>nj_test_bench.sql</code> yields the following results, notice that even with more data to index scan through, the index scan still occupies &lt;20% of the total tile-generation time. It seems the limiting factor in this type of query is aggregating the returned polygons to an MVT tile (regardless of how many points are returned), not locating the shapes within an area.</p>
+<p>As long as the return set is not too large (e.g. the application isn’t trying to query all polygons in a 100km<sup>2</sup> area), tile-generation will stay fast.</p>
+<h4 id="figure-a.1.3---explain-analyze---sample-execution-of-nj-test-query---querying-entire-state">Figure A.1.3 - EXPLAIN ANALYZE - Sample Execution of NJ Test Query - Querying Entire State</h4>
+<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource sql numberLines"><code class="sourceCode sql"><span id="cb11-1"><a href="#cb11-1"></a>Aggregate (actual <span class="dt">time</span><span class="op">=</span><span class="dv">371</span>.<span class="dv">264</span><span class="op">..</span><span class="fl">371.265</span> <span class="kw">rows</span><span class="op">=</span><span class="dv">1</span> loops<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-2"><a href="#cb11-2"></a>  <span class="op">-&gt;</span>  <span class="kw">Nested</span> <span class="cf">Loop</span> (actual <span class="dt">time</span><span class="op">=</span><span class="dv">0</span>.<span class="dv">854</span><span class="op">..</span><span class="fl">51.523</span> <span class="kw">rows</span><span class="op">=</span><span class="dv">20384</span> loops<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-3"><a href="#cb11-3"></a>        <span class="op">-&gt;</span>  Seq <span class="kw">Scan</span> <span class="kw">on</span> pts (actual <span class="dt">time</span><span class="op">=</span><span class="dv">0</span>.<span class="dv">013</span><span class="op">..</span><span class="fl">0.014</span> <span class="kw">rows</span><span class="op">=</span><span class="dv">1</span> loops<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-4"><a href="#cb11-4"></a>        <span class="op">-&gt;</span>  <span class="kw">Index</span> <span class="kw">Scan</span> <span class="kw">using</span> nj_polygon_way_idx <span class="kw">on</span> nj_polygon c2 (actual <span class="dt">time</span><span class="op">=</span><span class="dv">0</span>.<span class="dv">818</span><span class="op">..</span><span class="fl">43.408</span> <span class="kw">rows</span><span class="op">=</span><span class="dv">20384</span> loops<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-5"><a href="#cb11-5"></a>              <span class="kw">Index</span> Cond: (way &amp;&amp; st_envelope(st_transform(pts.rdpts, <span class="dv">3857</span>)))</span>
+<span id="cb11-6"><a href="#cb11-6"></a></span>
+<span id="cb11-7"><a href="#cb11-7"></a>Planning <span class="dt">Time</span>: <span class="fl">0.229</span> ms</span>
+<span id="cb11-8"><a href="#cb11-8"></a>Execution <span class="dt">Time</span>: <span class="fl">372.143</span> ms</span></code></pre></div>
+</body>
+</html>

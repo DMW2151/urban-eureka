@@ -22,7 +22,7 @@ resource "aws_ecs_task_definition" "tileserver-api" {
   container_definitions = jsonencode(
     [
 
-      # Service 1 - Tileserver - Golang
+      # Task 1 - Tileserver - Golang
       {
 
         # Basics
@@ -73,7 +73,8 @@ resource "aws_ecs_task_definition" "tileserver-api" {
         },
         
         "links": [
-          "tilecache:tilecache"
+          "tilecache:tilecache",
+          "xray-daemon:xray-daemon"
         ]
 
 
@@ -122,6 +123,27 @@ resource "aws_ecs_task_definition" "tileserver-api" {
         },
 
         # Port Mappings - Expose 2151 to Serve Requests
+      },
+
+      # Task #3 - AWS XRay Agent
+      {
+      "name": "xray-daemon",
+      "image": "amazon/aws-xray-daemon",
+      "cpu": 32,
+      "memoryReservation": 256,
+      "portMappings" : [
+          {
+              "hostPort": 0,
+              "containerPort": 2000,
+              "protocol": "udp"
+          },
+          # [TODO] TCP Port 2000 too...for debug (remove when resolved...)
+          {
+              "hostPort": 0,
+              "containerPort": 2000,
+              "protocol": "tcp"
+          }
+       ]
       }
 
     ]

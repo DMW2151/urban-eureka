@@ -81,6 +81,12 @@ func (dbcfg *DBPoolConfig) OpenPool() (err error) {
 		log.Info("Init DB connection pool without X-ray Tracing requests")
 
 	} else {
+
+		if dbcfg.Host == "" {
+			// [Get From Cloud Map] Check CloudMap
+
+		}
+
 		// [TODO] Change this lack of auth -> for obvious reasons....
 		connURL := fmt.Sprintf("postgres://%s:nosecurity@%s:%s/%s?sslmode=%s",
 			dbcfg.User, dbcfg.Host, dbcfg.Port, dbcfg.DBName, dbcfg.SSLMode,
