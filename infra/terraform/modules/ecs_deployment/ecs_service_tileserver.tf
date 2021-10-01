@@ -5,7 +5,10 @@ resource "aws_ecs_service" "tileserver-api" {
   name            = "tileserver-api"
   cluster         = aws_ecs_cluster.backend_ecs_cluster.arn
   task_definition = aws_ecs_task_definition.tileserver-api.arn
-  desired_count   = 4
+  iam_role      = data.aws_iam_role.ecs_task_execution_role.arn
+  depends_on = [
+    data.aws_iam_role.ecs_task_execution_role
+  ]
 
   # Deployment Params
   launch_type                        = "EC2"
@@ -16,13 +19,13 @@ resource "aws_ecs_service" "tileserver-api" {
   deployment_minimum_healthy_percent = 100
   health_check_grace_period_seconds  = 30
   enable_execute_command             = true
-  force_new_deployment  = true
-  
+  force_new_deployment               = true
+
 
   load_balancer {
     target_group_arn = aws_lb_target_group.tileserver_target_grp.arn
-    container_name   = "tileserver"
-    container_port   = 2151
+    container_name   = "nginx"
+    container_port   = 80
   }
 
   placement_constraints {

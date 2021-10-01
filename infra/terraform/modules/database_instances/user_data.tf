@@ -8,7 +8,7 @@ data "template_file" "postgis-user-data" {
 }
 
 data "template_file" "postgis-builder-user-data" {
-  template = file("./../modules/database_instances/user_data/build_nvme_postgis.sh")
+  template = file("./../modules/database_instances/user_data/build_builder_postgis.sh")
 }
 
 # User data for jump server - adds some basic utilities to a plain AWS Linux EC2 instance

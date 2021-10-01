@@ -4,7 +4,7 @@
 # Resource: https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string
 resource "random_string" "osm_pg__worker_pwd" {
   length  = 16
-  special = true
+  special = false
 }
 
 # Password for OSM Builder/Worker instance

@@ -22,7 +22,7 @@ resource "aws_lb" "tileserver_api_lb" {
   # Security + Access
   security_groups = [
     aws_security_group.lb_sg.id,
-     var.vpc_all_traffic_sg.id
+    var.vpc_all_traffic_sg.id
   ]
 
 
@@ -52,7 +52,7 @@ resource "aws_route53_record" "maphub_api" {
 
 resource "aws_lb_target_group" "tileserver_target_grp" {
   name        = "tileserver-target-grp"
-  port        = 2151
+  port        = 80
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = var.core_vpc.id
@@ -87,7 +87,7 @@ resource "aws_lb_listener" "alb_https_listener_rule" {
   }
 
   tags = {
-    name        = "https-listener"
+    name = "https-listener"
   }
 
 }

@@ -10,7 +10,7 @@ resource "aws_ecs_cluster" "backend_ecs_cluster" {
 
   configuration {
     execute_command_configuration {
-      logging    = "OVERRIDE"
+      logging = "OVERRIDE"
 
       log_configuration {
         cloud_watch_encryption_enabled = true

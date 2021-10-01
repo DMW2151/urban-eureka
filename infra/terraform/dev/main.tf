@@ -9,7 +9,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.50.0"
+      version = "~> 3.60.0"
     }
   }
 
@@ -61,6 +61,7 @@ module "ecs" {
 module "database_instances" {
   source             = "../modules/database_instances"
   account_id         = data.aws_caller_identity.current.account_id
+  core_vpc           = module.networking.core-vpc
   db_subnet          = module.networking.subn-us-east-1f-private
   jump_subnet        = module.networking.subn-us-east-1f-public
   vpc_all_traffic_sg = module.networking.vpc-all-traffic-sg

@@ -8,18 +8,7 @@ resource "aws_eip" "nat_1f" {
   depends_on = [aws_internet_gateway.core-igw] # Whole Object - NOT just ID
 
   tags = {
-    Name = "geospatial-vpc-nat-1f"
+    Name   = "geospatial-vpc-nat-1f"
     Module = "Core Network"
   }
-}
-
-resource "aws_eip" "nat_1d" {
-  vpc        = true
-  depends_on = [aws_internet_gateway.core-igw] # Whole Object - NOT just ID
-
-  tags = {
-    Name = "geospatial-vpc-nat-1d"
-    Module = "Core Network"
-  }
-
 }

@@ -10,7 +10,7 @@ resource "aws_security_group" "vpc_all_traffic_sg" {
   vpc_id                 = aws_vpc.geospatial-core.id
   description            = "Allows all access (ingress + egress) from within the VPC on all ports"
   revoke_rules_on_delete = true
-  
+
   # Ingress/Egress Rules
   ingress {
     from_port = 0
@@ -33,7 +33,7 @@ resource "aws_security_group" "vpc_all_traffic_sg" {
   }
 
   tags = {
-    Name = "vpc_all_traffic"
+    Name   = "vpc_all_traffic"
     Module = "Tileserver Core Networking"
   }
 
@@ -60,17 +60,17 @@ resource "aws_security_group" "ssh_from_deployer" {
     ]
   }
 
+
   egress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "TCP"
-    cidr_blocks = [
-      var.deployer_ip
-    ]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   tags = {
-    name = "deployer_to_vpc_traffic"
+    name   = "deployer_to_vpc_traffic"
     Module = "Tileserver Core Networking"
   }
 

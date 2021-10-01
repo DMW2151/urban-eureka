@@ -18,6 +18,22 @@ resource "aws_ecr_repository" "tileserver-cache" {
 
 }
 
+resource "aws_ecr_repository" "nginx" {
+  name                 = "nginx"
+  image_tag_mutability = "MUTABLE"
+
+  # Security constraints - Enable Snyk scan on push to repo
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  # Cannot be destroyed via terraform
+  lifecycle {
+    prevent_destroy = false
+  }
+
+}
+
 # One Repository for the Application/API
 resource "aws_ecr_repository" "tileserver-api" {
   name                 = "tileserver-api"
@@ -34,3 +50,18 @@ resource "aws_ecr_repository" "tileserver-api" {
   }
 }
 
+# One Repository for the Xray Agent
+resource "aws_ecr_repository" "xray-agent" {
+  name                 = "xray-agent"
+  image_tag_mutability = "MUTABLE"
+
+  # Security constraints - Enable Snyk scan on push to repo
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  # Cannot be destroyed via terraform
+  lifecycle {
+    prevent_destroy = false
+  }
+}

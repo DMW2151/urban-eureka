@@ -1,3 +1,17 @@
+variable "core_vpc" {
+  description = "..."
+  type = object({
+    id         = string
+    arn        = string
+    cidr_block = string
+  })
+}
+
+variable "s3_params_bucket" {
+  description = "..."
+  type        = string
+}
+
 variable "account_id" {
   description = "..."
   type        = string

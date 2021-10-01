@@ -2,59 +2,121 @@
 <html>
     <head>
       <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
-      <title>OpenLayers</title>
+      <title>Dynamic Tileserver</title>
       <link rel="stylesheet" href="https://openlayers.org/en/latest/css/ol.css" type="text/css">
-      <link rel="stylesheet" href="./main.css" type="text/css">
+      <link rel="stylesheet" href="./css/main.css" type="text/css">
     </head>
     <body> 
     
     <div class="topnav">
-        <a class="pointer" onclick="toggle_about()"> About </a>
+        <div class="pointer" onclick="toggle_elem('about-overlay')"> About </div>
+        <div class="pointer" onclick="toggle_elem('rules-overlay')"> Apply Layer Filter</div>
+        <div class="pointer dropdown"> Select Object Layer
+            <div class="pointer dropdown-content">
+              <button class="pointer switcher" value="line">Lines</button>
+              <button class="pointer switcher" value="roads">Roads</button>
+              <button class="pointer switcher" value="point">Points</button>
+              <button class="pointer switcher" value="polygon">Polygon</button>
+            </div>
+        </div>
     </div>
 
-    <div id="map" onkeydown="keyboard_navig(event)" tabindex="0"></div>
+    <div id="map" onkeydown="keyboard_navig(event)" tabindex="0">
+    </div>
     
-    <div style="display:none"  class="overlay" id="overlay" onclick="toggle_about()"></div>
+    <div id="overlay" style="display:none" class="overlay" onclick="toggle_elem()">
+    </div>
 
-    <div style="visibility:hidden;" class="overlay" id="about-overlay">
+    <div id="about-overlay" style="visibility:hidden;" class="overlay">
         <div class="center">
+            <h1 style="margin-left:10%; margin-right: 10%;">About</h1>
+            <hr style="height:2px; border-width:0; margin-left: 10%; margin-right: 10%; background-color:black;">
+            <p>
+              This project is an entry into the <a href="https://awsgraviton.devpost.com/">AWS Graviton2 Hackathon</a>. 
+              The project's backend services allow users to query through >1TB of OpenStreetMap (OSM) and request custom vector 
+              layers built on top of this data. This webpage offers a convenient graphic interface to explore and visualize your 
+              custom layers.
+            </p>
 
-          <h1>About</h1>
-          <hr style="height:2px;border-width:0;color:#204068;background-color:#204068">
+            <p>
+                All web-based maps rely on "tiles". To map data that changes infrequently, a developer could pre-generate all the tiles they need with a tool like <a href="https://github.com/mapbox/tippecanoe">Tippecanoe</a>, 
+                save them to disk and serve them as needed as images. For a small dataset (e.g. the boundaries of the parks in a city), a developer can serve the entire GeoJSON object along with the 
+                webpage.
+            </p>
+
+            <p>
+              But what about geospatial sources that are particularly large, frequently changing, or up to the end-user to manipulate? In this case, there is a need for a dynamic tileserver!
+              A dynamic tileserver works just like any other API; my backend exposes an endpoint that returns the result of query against a database. However, the response is a specially prepared 
+              <a href='https://github.com/mapbox/vector-tile-spec/blob/master/2.1/README.md'>binary payload</a> that this page's <a href="https://openlayers.org/">frontend client library</a> understands to render as portion of the map
+            </p>
+            <p>Compared to generating static tiles, generating tiles dynamically requires less disk space and has lower peak CPU usage, but demands better disk, memory, and consistent CPU performance; a perfect set of requirements for Graviton instances!</p>
+
+            <hr style="margin-left: 10%; margin-right: 10%; height:2px; border-width:0; background-color:black;">
+            <p>
+              I'd recommend starting with the <a href="./docs/pages/docs.html">layer creation documentation<a> to see some examples
+              of custom layers that can be built with this tool. If you'd like to learn more about the project in detail, consider reading any of the following:
+            </p>
+
+            <p>
+              <ul>
+                <li> A diagram of the system's architecture; I use some of the following core resources, but a full diagram is available <a href="./docs/pages/arch.pdf">here</a>.
+                  <ul>
+                  <li><code style="color:#204068" >AWS ECS  </code>&mdash; For launching tasks into EC2</li>
+                  <li><code style="color:#204068" >AWS ECR  </code>&mdash; For managing custom Redis, API, and X-Ray Agent images</li>
+                  <li><code style="color:#204068" >AWS EC2  </code>&mdash; For hosting a PostgreSQL database instance with <a href="https://postgis.net/">PostGIS</a> and <a href="https://www.postgresql.org/docs/13/hstore.html">HStore</a>
+                  <li><code style="color:#204068" >AWS XRay </code>&mdash; For analysis of API performance</li>
+                  <li><a href="https://download.geofabrik.de/"> GeoFabrik</a> &mdash; For providing a free mirror to OSM data</li>
+                  <li><a href="https://carto.com/basemaps/"> Carto</a> &mdash; For static image tiles</li>
+                  </ul>
+                </li>
+                <li><a href="./docs/pages/readme.html"> Comparison</a> of <code>m6g</code> and <code>t3</code> performance for serving vector tiles
+                  <ul> 
+                      <li>Loading OSM data, a primarily disk-bound task, by <b style="color:#204068">20%</b></li>
+                      <li>Indexing OSM data, a primarily CPU and memory-bound task, by <b style="color:#204068">40%</b></li>
+                      <li>Serving tile-requests, a primarily memory-bound task, by <b style="color:#204068">60%</b></li>
+                  </ul>              
+                </li>
+                <li><a href="https://github.com/DMW2151/urban-eureka"> Project Github repo</a></li>
+                <li><a href="https://devpost.com/software/tileserver"> Project DevPost page</a></li>
+              </ul>
+            </p>
+          </p>
+          <hr style="margin-left: 10%; margin-right: 10%; height:2px; border-width:0; background-color:black;">
           <p>
-            This page allows you to generate and share dynamic vector layers built on top of OpenStreetMap (OSM). 
-            Each object shown on the map has a series of tags associated with it, using the rules tab, you
-            can define rules to select a subset of those objects.
-            <hr>
-            Combine one or more rules to create a custom layer, after your layer has been submitted, you'll
-            receive a unique ID for the layer that you can use to share your map.
-            <br><br>
-            <b>https://tiles.maphub.dev/index.html?id=<font color="red">${your_layer_id}</font></b>
+              Contribute Data to <a href="https://wiki.openstreetmap.org/wiki/Join_the_community">OSM</a>!
+          </p>
+                
+
+        </div>
+    </div>
+
+    <div id="rules-overlay" style="visibility:hidden;" class="overlay" >
+        <div class="center">
+            <h1 style="margin-left:10%; margin-right: 10%;">Create New Layer</h1>
+            <hr style="height:2px; border-width:0; margin-left: 10%; margin-right: 10%; background-color:black;">
+          <p> If you haven't already, consider taking a look at the <a href="./docs/pages/docs.html">Layer Creation Documentation<a> to see some example layers and their corresponding json definitions.</a></p>
+          <p>
+            <textarea id="filter-json" placeholder="JSON Filter Definition..." style="resize: none;" onfocusout="prettyPrint()" cols=80 rows=16></textarea>
+            <input id="layer-hash-input" placeholder="Encoded Filter Definition..." style="resize: none;"></input>
+          </p>
+          <br>
+          <p>
+          <span>
+              <button id='enable-filter-toggle'>Enable Filter</button>
+              <button id='apply-layer-hash'>Apply Layer Hash</button>
+          </span>
           </p>
         </div>
     </div>
 
-    
-    <div id="analysispanel" class="analysispanel main-container">
-
-      <div class="flex-container"> 
-        
-      
-        <!-- Recent Objects  -->
-        <div id="recent-obj" class="flex-container panel">
-          <form>
-            <p>
-              <input type="text" id="object-search" onkeyup="search_tags()" placeholder="Search for Tags..." title="Type in a name">
-            </p>
-          </form>
-          <br>
-          <ul id="recent-objects" style="list-style-type:none;"></ul> 
-        </div>
+    <div id="popup" class="ol-popup">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content"></div>
     </div>
-
+    
     <!-- For Faster Load?? -->
-    <script src="./bundle.js"></script>
-    <script src="./utility.js"></script>
+    <script src="./js/bundle.js"></script>
+    <script src="./js/utility.js"></script>
   </body>
 </html>
 

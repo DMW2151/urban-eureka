@@ -14,7 +14,7 @@ resource "aws_instance" "postgis-main-1" {
   # AMI Name: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210429
   # [NOTE]: m6gd.large is EBS optimized by default, the argument `ebs_optimized` is OPTIONAL
   ami           = "ami-00d1ab6b335f217cf"
-  instance_type = "m6gd.large"
+  instance_type = "m6g.large"
   ebs_optimized = true
 
 
@@ -34,13 +34,13 @@ resource "aws_instance" "postgis-main-1" {
   # performance effect of this datadir swap
   root_block_device {
     volume_type           = "gp3"
-    volume_size           = 100
+    volume_size           = 1000
     iops                  = 3000
     throughput            = 125
     delete_on_termination = true
 
     tags = {
-      Name = "PostGIS Main - 1 - Root Volume"
+      Name   = "PostGIS Main - 1 - Root Volume"
       Module = "Database Instances"
     }
 

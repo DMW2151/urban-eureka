@@ -94,7 +94,7 @@ resource "aws_iam_policy" "ecr_full" {
 # from this IAM role
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
 resource "aws_iam_role" "osm_build_profile" {
-  name               = "osm_db_profile"
+  name               = "osm_build_db_profile"
   assume_role_policy = data.aws_iam_policy_document.instance-assume-role-policy.json
   managed_policy_arns = [
     aws_iam_policy.ssm_reader.arn,

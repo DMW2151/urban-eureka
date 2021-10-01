@@ -6,7 +6,7 @@ resource "aws_vpc" "geospatial-core" {
   enable_dns_hostnames = false
 
   tags = {
-    Name = "geospatial-core"
+    Name   = "geospatial-core"
     Module = "Tileserver Core Networking"
   }
 }

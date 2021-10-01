@@ -6,7 +6,7 @@ resource "aws_internet_gateway" "core-igw" {
   vpc_id = aws_vpc.geospatial-core.id
 
   tags = {
-    Name = "geospatial-vpc-igw"
+    Name   = "geospatial-vpc-igw"
     Module = "Core Network"
   }
 
