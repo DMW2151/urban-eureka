@@ -1,11 +1,25 @@
 # Get the recent images and then assign them to their tasks...
 
+resource "null_resource" "push-updater-img" {
+  provisioner "local-exec" {
+    command = "/bin/bash ../modules/ecs_deployment/localexec/build_and_push_img.sh ./../../../osm-updater osm-updater development"
+  }
+
+  depends_on = [
+    aws_ecr_repository.osm-updater
+  ]
+
+  triggers = {
+    src_hash = sha256(file("./../../../osm-updater/Dockerfile"))
+  }
+}
+
 
 
 # [NOTE]: Bit of a cheeky move to use local-exec, terraform isn't for this sort of thing 
 resource "null_resource" "push-cache-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/build_and_push_img.sh ./../../../tile-cache tileserver-cache development linux/amd64"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../tile-cache tileserver-cache development linux/amd64"
   }
 
   depends_on = [
@@ -20,7 +34,7 @@ resource "null_resource" "push-cache-img" {
 
 resource "null_resource" "push-nginx-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/build_and_push_img.sh ./../../../nginx nginx development linux/aarch64"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../nginx nginx development linux/aarch64"
   }
 
   depends_on = [
@@ -34,7 +48,7 @@ resource "null_resource" "push-nginx-img" {
 
 resource "null_resource" "push-api-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/build_and_push_img.sh ./../../../tile-api/ tileserver-api development linux/amd64"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../tile-api/ tileserver-api development linux/amd64"
   }
 
   depends_on = [
@@ -47,9 +61,20 @@ resource "null_resource" "push-api-img" {
 
 }
 
+
+data "aws_ecr_image" "osm-updater-img" {
+  repository_name = aws_ecr_repository.osm-updater.name
+  image_tag       = "development"
+
+  depends_on = [
+    aws_ecr_repository.osm-updater,
+    null_resource.push-updater-img
+  ]
+}
+
 resource "null_resource" "push-xray-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/build_and_push_img.sh ./../../../xray-agent xray-agent development linux/amd64"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../xray-agent xray-agent development linux/amd64"
   }
 
   depends_on = [

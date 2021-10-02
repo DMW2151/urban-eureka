@@ -12,8 +12,8 @@ resource "aws_ecs_task_definition" "tileserver-api" {
   ]
 
   # Resource Allocation - Assumes we're using a r6 medium w. 1024 CPU shares + 8GB memory
-  cpu    = 1024 # 1 CPU 
-  memory = "8192" # 8 GB Memory - Don't plan for all of it!
+  cpu    = 1024   # 1 CPU 
+  memory = "6000" # just under 8 GB Memory to match on 8GB instances...  - Don't plan to use or reserve all of it!
 
   # Networking/Security
   network_mode = "bridge"
@@ -31,9 +31,9 @@ resource "aws_ecs_task_definition" "tileserver-api" {
         "essential" : true,
 
         # Resource Requirements
-        "cpu" : 256,
-        "memory" : 128,
-        "memoryReservation" : 512,
+        "cpu" : 512,
+        "memory" : 512,
+        "memoryReservation" : 128,
 
 
         # Start/Stop Timeouts on the Container...
@@ -120,22 +120,12 @@ resource "aws_ecs_task_definition" "tileserver-api" {
         ]
 
         # Health Check
-        "healthCheck" : {
-          "command" : ["CMD-SHELL", "curl -XGET http://localhost:2151/health/ || exit 1"],
-          "interval" : 30,
-          "retries" : 4,
-          "timeout" : 5
-        },
-
-        # Port Mappings - Expose 2151 to Serve Requests
-        "portMappings" : [
-          {
-            "containerPort" : 2151,
-            "hostPort" : 2151,
-            "protocol" : "tcp"
-          }
-        ]
-
+        # "healthCheck" : {
+        #   "command" : ["CMD-SHELL", "curl -XGET http://localhost:2151/health/ || exit 1"],
+        #   "interval" : 30,
+        #   "retries" : 4,
+        #   "timeout" : 5
+        # },
       },
 
       # Task #2 - Tile Cache - Redis
@@ -147,8 +137,8 @@ resource "aws_ecs_task_definition" "tileserver-api" {
 
         # Resource Requirements
         "cpu" : 128,
-        "memory": 256,
-        "memoryReservation" : 6144,
+        "memory" : 4096,
+        "memoryReservation" : 256,
 
         # Start/Stop Timeouts on the Container...
         "startTimeout" : 60,
@@ -177,31 +167,31 @@ resource "aws_ecs_task_definition" "tileserver-api" {
 
       # Task #3 - Nginx
       {
-       "name": "nginx",
-       "image": "${data.aws_ecr_image.tileserver-cache-img.registry_id}.dkr.ecr.${var.default_region}.amazonaws.com/${data.aws_ecr_image.nginx-img.repository_name}:${var.image_tag}",
+        "name" : "nginx",
+        "image" : "${data.aws_ecr_image.tileserver-cache-img.registry_id}.dkr.ecr.${var.default_region}.amazonaws.com/${data.aws_ecr_image.nginx-img.repository_name}:${var.image_tag}",
 
-      "cpu" : 128,
-      "memory": 128,
-      "memoryReservation" : 128,
-       
-       "essential": true,
+        "cpu" : 128,
+        "memory" : 128,
+        "memoryReservation" : 128,
 
-       "portMappings": [
-         {
-           "containerPort": 80,
-           "hostPort" : 80,
-           "protocol": "tcp"
-         }
-       ],
-      
-      "healthCheck" : {
-          "command" : ["CMD-SHELL", "lsof -i TCP:80 || exit 1"],
-          "interval" : 30,
-          "retries" : 4,
-          "timeout" : 5
-      },
+        "essential" : true,
 
-       "logConfiguration" : {
+        "portMappings" : [
+          {
+            "containerPort" : 80,
+            "hostPort" : 80,
+            "protocol" : "tcp"
+          }
+        ],
+
+        # "healthCheck" : {
+        #     "command" : ["CMD-SHELL", "lsof -i TCP:80 || exit 1"],
+        #     "interval" : 30,
+        #     "retries" : 4,
+        #     "timeout" : 5
+        # },
+
+        "logConfiguration" : {
           "logDriver" : "awslogs",
           "options" : {
             "awslogs-group" : aws_cloudwatch_log_group.tileserver-api.name,
@@ -210,10 +200,10 @@ resource "aws_ecs_task_definition" "tileserver-api" {
           }
         },
 
-       "links": [
-         "tileserver:tileserver"
-       ]
-     },
+        "links" : [
+          "tileserver:tileserver"
+        ]
+      },
       # Task #4 - AWS XRay Agent
       {
         "name" : "xray-daemon",
@@ -221,7 +211,7 @@ resource "aws_ecs_task_definition" "tileserver-api" {
         "essential" : false,
 
         "cpu" : 128,
-        "memory": 64,
+        "memory" : 128,
         "memoryReservation" : 128,
 
         "environment" : [
@@ -231,26 +221,13 @@ resource "aws_ecs_task_definition" "tileserver-api" {
           },
         ],
 
-        "healthCheck" : {
-          "command" : ["CMD-SHELL", "lsof -i UDP:2000 || exit 1"],
-          "interval" : 30,
-          "retries" : 4,
-          "timeout" : 5
-      },
+        # "healthCheck" : {
+        #   "command" : ["CMD-SHELL", "lsof -i UDP:2000 || exit 1"],
+        #   "interval" : 30,
+        #   "retries" : 4,
+        #   "timeout" : 5
+        # },
 
-        # TCP Port 2000 too! - Just to make sure the golang app gets it...
-        "portMappings" : [
-          {
-            "hostPort" : 2000,
-            "containerPort" : 2000,
-            "protocol" : "udp"
-          },
-          {
-            "hostPort" : 2000,
-            "containerPort" : 2000,
-            "protocol" : "tcp"
-          }
-        ]
 
         "logConfiguration" : {
           "logDriver" : "awslogs",

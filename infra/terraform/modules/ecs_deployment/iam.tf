@@ -6,7 +6,7 @@ resource "aws_iam_policy" "xray_all" {
     Version = "2012-10-17"
     Statement = [
       {
-        "Sid": "AllowAllXRay",
+        "Sid" : "AllowAllXRay",
         "Effect" : "Allow",
         "Action" : [
           "xray:*",
@@ -29,7 +29,7 @@ resource "aws_iam_policy" "ecs_full" {
     Version = "2012-10-17"
     Statement = [
       {
-        "Sid": "AllowAllECS",
+        "Sid" : "AllowAllECS",
         "Effect" : "Allow",
         "Action" : [
           "ecs:*",

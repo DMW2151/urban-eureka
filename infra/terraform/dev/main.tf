@@ -49,6 +49,7 @@ module "ecs" {
   vpc_all_traffic_sg        = module.networking.vpc-all-traffic-sg
   image_tag                 = "development"
   osm_pg__worker_pwd        = module.database_instances.osm_pg__worker_pwd
+  osm__update_server = "http://download.geofabrik.de/north-america/us/delaware-updates"
 }
 
 

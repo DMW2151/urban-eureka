@@ -27,6 +27,7 @@ variable "public_subnet_1" {
   })
 }
 
+
 variable "public_subnet_2" {
   description = "..."
   type = object({
@@ -73,3 +74,10 @@ variable "image_tag" {
   description = "..."
   type        = string
 }
+
+
+variable "osm__update_server" {
+  description = "..."
+  type        = string
+}
+

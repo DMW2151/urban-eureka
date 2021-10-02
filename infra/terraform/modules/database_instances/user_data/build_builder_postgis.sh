@@ -25,8 +25,19 @@ sudo apt-get -y install \
     sysstat \
     awscli \
     jq \
-    osm2pgsql &&\
+    git &&\
 sudo apt-get clean
+
+# Manual Install for OSM2PGSQL Version 1.4.1, not available via apt on 20.04
+git clone https://github.com/openstreetmap/osm2pgsql.git 1.4.1 &&\
+    mkdir build &&\
+    cd build &&\
+    cmake ./../1.4.1/ &&\
+    make &&\
+    make install
+
+# Need Psycopg2..
+pip3 install psycopg2-binary osmium
 
 # Initialize a PostGIS database with a non superuser user, `osm_worker` - get password from parameter store...
 export OSM_WORKER_PGPASSWORD=`(aws ssm get-parameters --names osm_pg__worker_pwd --region=us-east-1 | jq -r '.Parameters | first | .Value')`

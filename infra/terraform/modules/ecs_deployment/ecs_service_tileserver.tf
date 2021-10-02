@@ -5,10 +5,6 @@ resource "aws_ecs_service" "tileserver-api" {
   name            = "tileserver-api"
   cluster         = aws_ecs_cluster.backend_ecs_cluster.arn
   task_definition = aws_ecs_task_definition.tileserver-api.arn
-  iam_role      = data.aws_iam_role.ecs_task_execution_role.arn
-  depends_on = [
-    data.aws_iam_role.ecs_task_execution_role
-  ]
 
   # Deployment Params
   launch_type                        = "EC2"
