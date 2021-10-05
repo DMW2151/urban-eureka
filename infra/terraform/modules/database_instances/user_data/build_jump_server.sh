@@ -1,6 +1,7 @@
 #! /bin/sh
-# Script installs basic utilities for the jump server..
 
+# Script installs basic utilities for the jump server, only needs to
+# do some very light data processing...
 sudo amazon-linux-extras install epel
 
 # Basic utils

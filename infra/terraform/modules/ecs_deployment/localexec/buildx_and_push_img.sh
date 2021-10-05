@@ -9,7 +9,6 @@ docker login \
     --password-stdin \
     ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
 
-# Sensor API
 docker buildx build \
     --platform $4 $1 \
     --tag ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/$2:$3 \

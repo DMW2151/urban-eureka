@@ -1,4 +1,6 @@
-# Define a group for the logs
+# Define a group for the logs, split into lambda, ECS application, and ECS
+
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group
 resource "aws_cloudwatch_log_group" "tileserver-api" {
 
   # General
@@ -10,7 +12,7 @@ resource "aws_cloudwatch_log_group" "tileserver-api" {
   }
 }
 
-
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group
 resource "aws_cloudwatch_log_group" "osm-update" {
 
   # General
@@ -22,6 +24,7 @@ resource "aws_cloudwatch_log_group" "osm-update" {
   }
 }
 
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group
 resource "aws_cloudwatch_log_group" "tileserver-cluster" {
 
   # General

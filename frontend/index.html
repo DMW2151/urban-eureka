@@ -97,13 +97,15 @@
           <p> If you haven't already, consider taking a look at the <a href="./docs/pages/docs.html">Layer Creation Documentation<a> to see some example layers and their corresponding json definitions.</a></p>
           <p>
             <textarea id="filter-json" placeholder="JSON Filter Definition..." style="resize: none;" onfocusout="prettyPrint()" cols=80 rows=16></textarea>
-            <input id="layer-hash-input" placeholder="Encoded Filter Definition..." style="resize: none;"></input>
+            <span>
+              <input id="layer-hash-input" placeholder="Filter Hash (Copies on Click)" style="resize: none;" onclick="copyHash()"></input>
+            </span>
           </p>
-          <br>
           <p>
           <span>
               <button id='enable-filter-toggle'>Enable Filter</button>
               <button id='apply-layer-hash'>Apply Layer Hash</button>
+              <button id='clear-filter-toggle'>Clear Filters</button>
           </span>
           </p>
         </div>
@@ -117,6 +119,7 @@
     <!-- For Faster Load?? -->
     <script src="./js/bundle.js"></script>
     <script src="./js/utility.js"></script>
+    
   </body>
 </html>
 

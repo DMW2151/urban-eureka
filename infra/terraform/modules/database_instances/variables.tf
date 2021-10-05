@@ -1,5 +1,5 @@
 variable "core_vpc" {
-  description = "..."
+  description = "Core VPC of the deployment"
   type = object({
     id         = string
     arn        = string
@@ -7,18 +7,13 @@ variable "core_vpc" {
   })
 }
 
-variable "s3_params_bucket" {
-  description = "..."
-  type        = string
-}
-
 variable "account_id" {
-  description = "..."
+  description = "Account ID of the caller"
   type        = string
 }
 
 variable "db_subnet" {
-  description = "..."
+  description = "Private Subnet for the DB (may be called private_subnet in other places!)"
   type = object({
     id                   = string
     arn                  = string
@@ -28,7 +23,7 @@ variable "db_subnet" {
 }
 
 variable "jump_subnet" {
-  description = "..."
+  description = "Public Subnet for Jump instances and APIs"
   type = object({
     id                   = string
     arn                  = string
@@ -38,7 +33,7 @@ variable "jump_subnet" {
 }
 
 variable "vpc_all_traffic_sg" {
-  description = "..."
+  description = "Default decurity group to apply for intra-VPC traffic"
   type = object({
     name = string
     arn  = string
@@ -47,7 +42,7 @@ variable "vpc_all_traffic_sg" {
 }
 
 variable "deployer_sg" {
-  description = "..."
+  description = "[DEV ONLY] - Security group to allow deployer (myself) ssh into the cluster w. SSH from $MY_IPV4"
   type = object({
     name = string
     arn  = string

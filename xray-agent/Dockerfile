@@ -10,7 +10,6 @@ RUN git clone https://github.com/aws/aws-xray-daemon.git
 RUN cd aws-xray-daemon &&\
     GOOS=linux GOARCH=arm64 go build -ldflags "-s -w" -o xray cmd/tracing/daemon.go cmd/tracing/tracing.go
 
-
 FROM amazonlinux
 
 ARG BUILDPATH

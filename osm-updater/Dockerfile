@@ -1,32 +1,21 @@
-FROM ubuntu:20.04
+FROM ubuntu:21.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
 COPY ./osm_replicate.sh /
 
-RUN sudo apt-get update &&\
-    sudo apt-get -y install \
-        postgresql-13 \
-        postgresql-client-13 \
-        postgis postgresql-13-postgis-3 \
-        gdal-bin \
-        sysstat \
-        awscli \
-        jq \
-        git &&\
-    sudo apt-get clean
+RUN  apt-get update &&\
+     apt-get -y install jq awscli wget cmake build-essential libboost-dev libexpat1-dev zlib1g-dev libbz2-dev osm2pgsql
 
-# Manual Install for OSM2PGSQL Version 1.4.1, not available via apt on 20.04
-RUN git clone https://github.com/openstreetmap/osm2pgsql.git 1.4.1 &&\
-    mkdir build &&\
-    cd build &&\
-    cmake ./../1.4.1/ &&\
-    make &&\
-    make install
+RUN  apt-get update &&\
+     apt install -y python3-pip
+
+RUN python3 -m pip install psycopg2-binary osmium
 
 RUN wget https://raw.githubusercontent.com/openstreetmap/osm2pgsql/master/scripts/osm2pgsql-replication &&\ 
     chmod +x osm2pgsql-replication &&\
-    cp osm2pgsql-replication ~/ &&\
     chmod +x osm_replicate.sh
 
-CMD ["./osm_replicate.sh"]
+RUN apt-get clean
+
+CMD ["/osm_replicate_2.sh"]

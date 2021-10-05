@@ -7,6 +7,14 @@ variable "core_vpc" {
   })
 }
 
+variable "ssm_reader" {
+  description = "..."
+  type = object({
+    name                   = string
+    arn                  = string
+  })
+}
+
 variable "private_subnet" {
   description = "..."
   type = object({
@@ -63,6 +71,7 @@ variable "osm_pg__worker_pwd" {
   description = "..."
   type        = string
 }
+
 
 
 variable "default_region" {

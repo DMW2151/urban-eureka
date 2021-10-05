@@ -1,6 +1,7 @@
 package tiles
 
-// BaseLayer - One of the four basic OSM types - Point, Line, Roads, Polygon
+// BaseLayer - One of the four basic OSM types - Point, Line, Roads, Polygon - Used for
+// validating incoming requests
 type BaseLayer string
 
 const (

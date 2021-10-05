@@ -1,5 +1,9 @@
-# Both the builder instance and the core postgis instance need to assume a role to perform administrative/auth tasks 
-# this file defines the reader policies they use to fetch data from s3/ssm
+# IAM roles for the OSM database build process.
+#
+# Both the builder instance and the core postgis instance need to assume a role to 
+# perform administrative/auth tasks, this file defines the reader policies they use 
+# to fetch data from s3/ssm. Also create a jump instance that can do a bit more admin
+# and testing...
 
 # Assume Role Policy - Default - Exists on AWS already
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
@@ -14,18 +18,18 @@ data "aws_iam_policy_document" "instance-assume-role-policy" {
   }
 }
 
-# Policy allows for reading incidental reading of parameters from SSM
+# Policy allows for reading parameters from SSM
+# [TODO]: Change to secrets mangager for "production" deployment
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy
 resource "aws_iam_policy" "ssm_reader" {
 
   name = "osm_param_reader"
 
-  # [WARN] - This is NOT only secure parameters - for storing secure params use 
-  # the secrets store!
+  # [WARN] - This is NOT for secure parameters - use the secrets store!
   policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
       {
-        "Sid" : "VisualEditor0",
         "Effect" : "Allow",
         "Action" : [
           "ssm:GetParametersByPath",
@@ -39,26 +43,9 @@ resource "aws_iam_policy" "ssm_reader" {
 
 }
 
-resource "aws_iam_policy" "osm_s3_reader" {
-
-  name = "osm_s3_reader"
-  policy = jsonencode({
-    # Policy allows for reading incidental parameters for environFrom S3
-    Version = "2012-10-17"
-    Statement = [
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "s3:Get*",
-          "s3:List*"
-        ],
-        "Resource" : "arn:aws:s3:::${var.s3_params_bucket}"
-      }
-    ]
-  })
-
-}
-
+# [DEV ONLY] Policy allows full access to ECR - Attached to the jump instance to allow testing and
+# pushing sample images
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy
 resource "aws_iam_policy" "ecr_full" {
 
   name = "ecr_full"
@@ -67,7 +54,6 @@ resource "aws_iam_policy" "ecr_full" {
     "Version" : "2012-10-17",
     "Statement" : [
       {
-        "Sid" : "VisualEditor0",
         "Effect" : "Allow",
         "Action" : [
           "ecr:GetRegistryPolicy",
@@ -80,7 +66,6 @@ resource "aws_iam_policy" "ecr_full" {
         "Resource" : "*"
       },
       {
-        "Sid" : "VisualEditor1",
         "Effect" : "Allow",
         "Action" : "ecr:*",
         "Resource" : "arn:aws:ecr:*:${var.account_id}:repository/*"
@@ -89,34 +74,31 @@ resource "aws_iam_policy" "ecr_full" {
   })
 }
 
-# Create an IAM role for each of the builder, jump, and db instances 
-# [NOTE] Not suitable for attachement to EC2, need to attach the `aws_iam_instance_profile` created 
-# from this IAM role
+# Create an IAM role for each of the builder, jump, and db instances
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
 resource "aws_iam_role" "osm_build_profile" {
   name               = "osm_build_db_profile"
   assume_role_policy = data.aws_iam_policy_document.instance-assume-role-policy.json
   managed_policy_arns = [
     aws_iam_policy.ssm_reader.arn,
-    aws_iam_policy.osm_s3_reader.arn
   ]
 }
 
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
 resource "aws_iam_role" "osm_db_profile" {
   name               = "osm_db_profile"
   assume_role_policy = data.aws_iam_policy_document.instance-assume-role-policy.json
   managed_policy_arns = [
     aws_iam_policy.ssm_reader.arn,
-    aws_iam_policy.osm_s3_reader.arn
   ]
 }
 
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
 resource "aws_iam_role" "jump_profile" {
   name               = "jump_profile"
   assume_role_policy = data.aws_iam_policy_document.instance-assume-role-policy.json
   managed_policy_arns = [
     aws_iam_policy.ssm_reader.arn,
-    aws_iam_policy.osm_s3_reader.arn,
     aws_iam_policy.ecr_full.arn
   ]
 }

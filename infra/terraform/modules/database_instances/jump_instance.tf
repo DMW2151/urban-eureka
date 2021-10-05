@@ -1,20 +1,20 @@
 # Just a Jump Server...
 # Launch a small instance in the public subnet of Core VPC for administrative tasks
 
-# Define the jump server instance in-line...
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance
 resource "aws_instance" "jump-1" {
 
   # Basics
-  # [NOTE] this isn't any old ubuntu or AWS Linux instance, this instance include the ECS utilities 
-  # pre-baked, leads to smaller user-data script...
+  # [NOTE] this instance AMI include the ECS utilities pre-baked, leads to smaller user-data script...
+  # not ever going to join a cluster as a worker, but can help to to test...
   ami           = "ami-0c92c94c2ecbd7d9c"
   instance_type = "t4g.nano"
 
   # Security + Networking
   #
-  # [NOTE] Treatment for keys is atypical of terraform. No way to access a key as a data resource
-  # just identify by name and EC2 checks if the key exists in your account!
+  # [NOTE] Treatment for keys is atypical of terraform. just identify by name and AWS 
+  # checks if the key exists in your account! In this case, I rely on a pre-made key
+  # `jump-1`
   subnet_id                   = var.jump_subnet.id
   availability_zone           = var.jump_subnet.availability_zone
   associate_public_ip_address = true

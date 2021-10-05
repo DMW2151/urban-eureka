@@ -56,7 +56,7 @@ var OSMRoadsQry string = `SELECT ST_AsMVT(a1.*) as pbf FROM (
 			st_transform(ST_MakeEnvelope($1, $2, $3, $4, 3857), 4326),
 			extent=>4096, 
 			buffer=>256
-		) AS geom
+		) AS geom, osm_id, tags
 	FROM osm.osm_roads c2
 	WHERE c2.way && ST_MakeEnvelope($1, $2, $3, $4, 3857)
 	%s

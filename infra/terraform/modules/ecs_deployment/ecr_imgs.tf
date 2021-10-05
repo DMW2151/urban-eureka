@@ -2,7 +2,7 @@
 
 resource "null_resource" "push-updater-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/build_and_push_img.sh ./../../../osm-updater osm-updater development"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../osm-updater osm-updater development linux/aarch64"
   }
 
   depends_on = [
@@ -14,12 +14,9 @@ resource "null_resource" "push-updater-img" {
   }
 }
 
-
-
-# [NOTE]: Bit of a cheeky move to use local-exec, terraform isn't for this sort of thing 
 resource "null_resource" "push-cache-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../tile-cache tileserver-cache development linux/amd64"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/build_and_push_img.sh ./../../../tile-cache tileserver-cache development"
   }
 
   depends_on = [

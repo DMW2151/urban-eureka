@@ -11,3 +11,7 @@ output "postgres_host_internal_ip" {
 output "osm_pg__worker_pwd" {
   value = aws_ssm_parameter.osm_pg__worker_pwd.value
 }
+
+output "osm_ssm_reader_policy" {
+  value = aws_iam_policy.ssm_reader
+}

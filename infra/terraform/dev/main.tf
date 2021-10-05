@@ -9,7 +9,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.60.0"
+      version = "~> 3.61.0"
     }
   }
 
@@ -50,6 +50,7 @@ module "ecs" {
   image_tag                 = "development"
   osm_pg__worker_pwd        = module.database_instances.osm_pg__worker_pwd
   osm__update_server = "http://download.geofabrik.de/north-america/us/delaware-updates"
+  ssm_reader = module.database_instances.osm_ssm_reader_policy
 }
 
 
@@ -67,6 +68,5 @@ module "database_instances" {
   jump_subnet        = module.networking.subn-us-east-1f-public
   vpc_all_traffic_sg = module.networking.vpc-all-traffic-sg
   deployer_sg        = module.networking.deployer-ssh-to-vpc-sg
-  s3_params_bucket   = "dmw2151-osm"
 }
 

@@ -1,16 +1,8 @@
-data "aws_acm_certificate" "maphub_api_lb_acm_cert" {
-  domain      = "api.maphub.dev"
-  types       = ["AMAZON_ISSUED"]
-  most_recent = true
-}
+# Create a load balancer that does SSL termination and routes traffic to Port 80 of the container
+# instances.
 
 
-data "aws_route53_zone" "primary" {
-  name         = "maphub.dev"
-  private_zone = false
-}
-
-
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb
 resource "aws_lb" "tileserver_api_lb" {
 
   # General
@@ -19,12 +11,10 @@ resource "aws_lb" "tileserver_api_lb" {
   internal           = false
   idle_timeout       = 5
 
-  # Security + Access
+  # Security + Access - Allow all Traffic 
   security_groups = [
-    aws_security_group.lb_sg.id,
-    var.vpc_all_traffic_sg.id
+    aws_security_group.lb_sg.id
   ]
-
 
   subnets = [
     var.public_subnet_1.id, var.public_subnet_2.id
@@ -40,16 +30,7 @@ resource "aws_lb" "tileserver_api_lb" {
 }
 
 
-resource "aws_route53_record" "maphub_api" {
-  zone_id = data.aws_route53_zone.primary.zone_id
-  name    = "api.maphub.dev"
-  type    = "CNAME"
-  ttl     = "300"
-  records = [
-    aws_lb.tileserver_api_lb.dns_name
-  ]
-}
-
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group
 resource "aws_lb_target_group" "tileserver_target_grp" {
   name        = "tileserver-target-grp"
   port        = 80
@@ -71,6 +52,7 @@ resource "aws_lb_target_group" "tileserver_target_grp" {
 
 }
 
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener
 resource "aws_lb_listener" "alb_https_listener_rule" {
 
   load_balancer_arn = aws_lb.tileserver_api_lb.arn

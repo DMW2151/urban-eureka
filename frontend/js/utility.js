@@ -4,6 +4,14 @@
 *
 */
 
+// Copy on Click
+function copyHash() {
+    var c = document.getElementById("layer-hash-input");
+    c.select();
+    navigator.clipboard.writeText(window.location.protocol + window.location.pathname + "?filter=" + c.value);
+}
+
+// Allow use of arrows + shift && arrows for navigation...
 function keyboard_navig(event){
 
     // zoom control
@@ -29,6 +37,7 @@ function keyboard_navig(event){
     }
 }
 
+// Toggle overlay status for about + layer definition pages...
 function toggle_elem(elemid) {
 
     // Check Current State of Overlay Objects...
@@ -52,6 +61,7 @@ function toggle_elem(elemid) {
     }
 }
 
+// Allows JSON to auto pretty-print in layer definition box...
 function prettyPrint() {
     var orig = document.getElementById('filter-json').value;
     

@@ -19,23 +19,20 @@ Hovering over any OSM object rendered on the map will cause a pop-up with the ob
 
 ## Layer Creation Documentation
 
-The **Apply Layer Filter** tab allows you to write rules that modify which OSM objects **`https://api.maphub.dev`** returns. Each layer can be defined as a json array of "rules", where each "rule" has the format defined below. 
+The **Apply Layer Filter** tab allows you to write rules that modify which OSM objects **`https://api.maphub.dev`** returns. Each layer can be defined as a json array of "rules", where each "rule" has the format defined below.
 
 ```json
 {
-    "condition": "<str>", 
-    // Apply Only to Inclusion/Exclusion comparison types
+    "condition": "<str>",
     "tags": ["<str>", "..." ],
-    // Apply Only to Value comparison types
-    "tag": "<str>",
+    // Apply Only to value comparison types
     "value": "<str>",
 }
 ```
 
 * `comparison` &mdash; One of the `"Comparison"` filters listed in `Table 1.1`
-* `tag` &mdash; An OSM tag - Valid for value comparisons
 * `value` &mdash; An OSM tag - Valid for value comparisons
-* `tags` &mdash; Array of OSM tags - Only Valid for inclusion/exclusion comparisons
+* `tags` &mdash; Array of OSM tags
 
 <center>
 | Comparison   |Type | Comparison Code | Description - Object has...                                                                        |
@@ -51,7 +48,6 @@ The **Apply Layer Filter** tab allows you to write rules that modify which OSM o
 | OneExist          |Inclusion/Exclusion| `"oneof"`           | one or more of the tags in ${tags}                         |
 Table: Table  1.1 Valid Comparison Filters
 </center>
-
 
 Because this database is hosted on a robust instance with good geospatial indexing performance, there is no need to give up disk space materializing user's requests for filtered layers for the sake of performance. You can think of these filters as no different than the addition of an `AND...` or  `WHERE...` clause into a SQL query.
 
@@ -71,21 +67,21 @@ The `allof` and `oneof` rules only use the `condition` and `tags` keys. A `oneof
       "cycleway:south",
       "cycleway:east",
       "cycleway:west"
-    ],
+    ]
   }
 ]
 ```
 
 ### Value Filter Rules
 
-The `eq`, `noteq`, `gt`, `gte`, `lt`, `lte`, and `like` rules use the `condition`, `tag`, and `value` keys. Because OSM tags have no standard format, filters checking for equality or comparison may return somewhat unexpected results. For example, the following rule may not pick up values like `"10"` or `"10mph"`.
+The `eq`, `noteq`, `gt`, `gte`, `lt`, `lte`, and `like` rules use the `condition`, `tag`, and `value` keys. Note that for Value comparisons, only the first value in `tags` is considered. Because OSM tags have no standard values, filters checking for equality or comparison may return somewhat unexpected results. For example, the following rule may not pick up values like `"10"` or `"10mph"`.
 
 ```json
 [
   {
     "condition": "gte",
     "tags": [
-      "speed"
+      "maxspeed"
     ],
     "value": "10 mph"
   }
@@ -101,7 +97,7 @@ Luckily, the `like` comparison rule offers the ability to query values using reg
     "tags": [
       "cuisine"
     ],
-    "value": "*an"
+    "value": "%an"
   }
 ]
 ```
@@ -109,22 +105,6 @@ Luckily, the `like` comparison rule offers the ability to query values using reg
 ### Multiple Filters
 
 Rules are combined into layers with an `AND` operator. For example, the following layer request fetches all OSM objects with:
-
-* A tag named `"cuisine"` and value `"italian"` AND either a `"website"` or `"wikipedia"` tab
-
-```json
-[
-  {
-    "condition": "eq",
-    "tag": "cuisine",
-    "value": "italian"
-  },
-  {
-    "condition": "oneof",
-    "tags":["website", "wikipedia"]
-  }
-]
-```
 
 * At least one tag named `"cycleway"`, `"cycleway:right"`, or `"cycleway:left"`, AND a tag named `"speed"` with a value > `"30mph"`
 
@@ -159,7 +139,6 @@ The "Apply Layer Filter" interface has two buttons that make communicating custo
 Example String:
 `WwogIHsKICAgICJjb25kaXRpb24iOiAibGlrZSIsCiAgICAidGFncyI6IFsKICAgICAgImN1aXNpbmUiCiAgICBdLAogICAgInZhbHVlIjogIiphbiIKICB9Cl0=`
 
-Before         |  After
-:-------------------------:|:-------------------------:
-![Fig 1a - Before Apply Hash](./../images/hash_1a.png) |  ![Fig 1b - After Apply Hash](./../images/hash_1b.png)
-Table: Table 1.2 Apply Image Hash
+![Fig 1a - Before Apply Hash](./../images/hash_1a.png)
+
+![Fig 1b - After Apply Hash](./../images/hash_1b.png)

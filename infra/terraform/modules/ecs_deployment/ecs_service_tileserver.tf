@@ -1,4 +1,5 @@
 # ECS - Define service for ECS Tile API cluster
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service 
 resource "aws_ecs_service" "tileserver-api" {
 
   # General
@@ -18,12 +19,15 @@ resource "aws_ecs_service" "tileserver-api" {
   force_new_deployment               = true
 
 
+  # Set traffic to go to NGINX - should be the only open port on 
+  # the container machines
   load_balancer {
     target_group_arn = aws_lb_target_group.tileserver_target_grp.arn
     container_name   = "nginx"
     container_port   = 80
   }
 
+  
   placement_constraints {
     type       = "memberOf"
     expression = "attribute:ecs.availability-zone in [us-east-1f, us-east-1d]"

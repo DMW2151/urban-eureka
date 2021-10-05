@@ -1,40 +1,37 @@
 # Builder instance is requested from the spot market and has high memory + NVME ephemeral storage
-# this instance is used to process the OSM import just once.
-#
+# this instance is used to process the baseline OSM import once before being terminated. Updates
+# can be managed by the main DB...
+
+
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/spot_instance_request
 # Also See: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance
 resource "aws_spot_instance_request" "builder-1" {
 
-  # [WARN] VPC spot instances DO NOT auto-terminate!
+  # [WARN] VPC spot instances DO NOT auto-terminate and cannot be set to terminate
+  # after a fixed period
   #
   # Need an instance that can meet the minimum POSTGIS and h-store recommendations 
-  # for a medium (100GB-1TB) geospatial database `m6gd.2xlarge` is a graviton-backed
-  # instance with the following specs:
-  # 
-  #   + 8 VCPU
-  #   + 32 GB RAM
-  #   + 480GB NVME ephemeral storage
-  #
-  # I expect these jobs to be up for ~10 hrs, so a cost of ~ $2-3 is expected. **If** the scope of the job 
-  # changes to include the entire world, bump to `m6gd.4xlarge`
+  # for a medium (100GB-1TB) geospatial database `r6g.2xlarge` will do
+  
+  # I expect these jobs to be up for ~10 hrs, so a cost of ~ $2-3 is expected. 
+  # **If** the scope of the job changes to include the entire world, bump to 
+  # `m6gd.4xlarge`
 
   # Basic
   # AMI Name: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210429
   ami           = "ami-00d1ab6b335f217cf"
-  instance_type = "r6g.2xlarge"
+  instance_type = "r6gd.2xlarge"
 
-  # Spot Market Specific
-  # Historically (Q3 2021 - These are hovering at about $0.15)
+  # Spot Market Specific - historically (Q3 2021 - These are hovering at about $0.15)
   # Leaving price at 0.00 so request expires immediatley, effectively bypassing `builder` stage
   spot_price           = "0.25"
   spot_type            = "one-time"
-  valid_until          = timeadd(timestamp(), "1ms")
+  valid_until          = timeadd(timestamp(), "5m") ## TODO: Accept Variable here -> This can be set to 5ms (DO NOT FILL) or 5m (FILL)
   wait_for_fulfillment = true
 
   # Security + Networking 
-  # Launch into a private subnet in the same subnet as PostGIS Main - Data transferred between Amazon EC2, Amazon RDS, 
-  # Amazon Redshift, Amazon ElastiCache instances, and Elastic Network Interfaces  in the same Availability Zone is 
-  # free - Launch with the DB!
+  # Launch into a private subnet in the same subnet as PostGIS Main to save a bit of money on
+  # data transfer back to the main DB
   availability_zone           = var.db_subnet.availability_zone
   subnet_id                   = var.db_subnet.id
   associate_public_ip_address = false
@@ -44,11 +41,9 @@ resource "aws_spot_instance_request" "builder-1" {
   ]
 
   # Storage
-  # Prefer XX6d family instances to XX6. Although we can crank up IOPs on GP3 instances, the NVME disk speeds OSM
-  # builds by a bit....
   root_block_device {
     volume_type           = "gp3"
-    volume_size           = 2000
+    volume_size           = 1000
     iops                  = 4000
     throughput            = 1000
     delete_on_termination = true

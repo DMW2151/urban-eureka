@@ -109,10 +109,10 @@ func (oc optionCondition) fmtValueComp(tag string, val string) string {
 		return fmt.Sprintf("AND (tags -> '%s') >= '%s'", tag, val)
 	case GreaterThan:
 		return fmt.Sprintf("AND (tags -> '%s') > '%s'", tag, val)
-	case LessThan:
-		return fmt.Sprintf("AND (tags -> '%s') < '%s'", tag, val)
 	case LessThanEqual:
 		return fmt.Sprintf("AND (tags -> '%s') <= '%s'", tag, val)
+	case LessThan:
+		return fmt.Sprintf("AND (tags -> '%s') < '%s'", tag, val)
 	case Like:
 		return fmt.Sprintf("AND (tags -> '%s') LIKE '%s'", tag, val)
 	default:

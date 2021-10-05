@@ -1,3 +1,4 @@
+# Security Group to allow me to SSH 
 resource "aws_security_group" "ecs_sg" {
   vpc_id = var.core_vpc.id
 

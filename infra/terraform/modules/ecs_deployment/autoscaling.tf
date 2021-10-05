@@ -1,6 +1,7 @@
 resource "aws_launch_configuration" "ecs_launch_config" {
   image_id             = "ami-0c92c94c2ecbd7d9c"
   iam_instance_profile = aws_iam_instance_profile.ecs_agent.name
+  
   security_groups = [
     aws_security_group.ecs_sg.id,
     var.vpc_all_traffic_sg.id,
@@ -18,9 +19,10 @@ resource "aws_launch_configuration" "ecs_launch_config" {
 
 }
 
-resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
+resource "aws_autoscaling_group" "asg" {
 
-  name = "asg"
+  name = "ecs-tiles-api-asg"
+
   vpc_zone_identifier = [
     var.public_subnet_1.id,
     var.public_subnet_2.id

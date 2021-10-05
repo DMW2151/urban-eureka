@@ -52,7 +52,7 @@ resource "aws_ecs_task_definition" "tileserver-api" {
           },
           {
             "name" : "PG__PASSWORD",
-            "value" : "${var.osm_pg__worker_pwd}" // "averysecurepassword" // [TODO]: Change Application to Use Secrets Manager...
+            "value" : "${var.osm_pg__worker_pwd}"  // [TODO]: Change Application to Use Secrets Manager...
           },
           {
             "name" : "PG__PORT",
@@ -119,13 +119,6 @@ resource "aws_ecs_task_definition" "tileserver-api" {
           "xray-daemon:xray-daemon",
         ]
 
-        # Health Check
-        # "healthCheck" : {
-        #   "command" : ["CMD-SHELL", "curl -XGET http://localhost:2151/health/ || exit 1"],
-        #   "interval" : 30,
-        #   "retries" : 4,
-        #   "timeout" : 5
-        # },
       },
 
       # Task #2 - Tile Cache - Redis
@@ -184,13 +177,6 @@ resource "aws_ecs_task_definition" "tileserver-api" {
           }
         ],
 
-        # "healthCheck" : {
-        #     "command" : ["CMD-SHELL", "lsof -i TCP:80 || exit 1"],
-        #     "interval" : 30,
-        #     "retries" : 4,
-        #     "timeout" : 5
-        # },
-
         "logConfiguration" : {
           "logDriver" : "awslogs",
           "options" : {
@@ -220,14 +206,6 @@ resource "aws_ecs_task_definition" "tileserver-api" {
             "value" : "${var.default_region}"
           },
         ],
-
-        # "healthCheck" : {
-        #   "command" : ["CMD-SHELL", "lsof -i UDP:2000 || exit 1"],
-        #   "interval" : 30,
-        #   "retries" : 4,
-        #   "timeout" : 5
-        # },
-
 
         "logConfiguration" : {
           "logDriver" : "awslogs",

@@ -16,7 +16,7 @@ html, body {
     border: 1px solid #cccccc;
     bottom: 12px;
     left: -50px;
-    min-width: 280px;
+    min-width: 500px;
 }
 
 .ol-popup:after, .ol-popup:before {
@@ -115,6 +115,16 @@ span button {
     font-size: 24px;
 }
 
+.topnav div:nth-child(1) {
+    float: left;
+    background-color: #204068;
+    text-align: center;
+    padding: 24px;
+    color: #ffffff;
+    border: none;
+    margin-left: 5%;
+}
+
 .topnav div:hover, .topnav button:hover {
     color: salmon;
 }
@@ -170,10 +180,10 @@ span button {
 .center {
     position: absolute;
     margin: auto;
-    left: 25%;
+    left: 5%;
     top: 10%;
-    width: 50%;
-    height: 80%;
+    width: 30%;
+    height: 70%;
     background-color: #ffffff;
     opacity: 0.9;
     border: 3px solid black;
@@ -201,8 +211,7 @@ span button {
     padding: 10px;
 }
 
-
-#layer-hash-input {
+#layer-hash-input{
     position: flex;
     justify-content: center;
     align-items: center;
@@ -214,3 +223,4 @@ span button {
     padding: 10px;
     font-family: 'Menlo';
 }
+

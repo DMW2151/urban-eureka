@@ -30,40 +30,78 @@ type DBPoolConfig struct {
 	dbPool                            *sql.DB
 }
 
-func getDBIPv4() {
+func getDBIPv4() (string, error) {
 
 	// Find the DB...
-	svc := servicediscovery.New(session.New())
+	svc := servicediscovery.New(
+		session.New(&aws.Config{
+			Region: aws.String("us-east-1"),
+		}),
+	)
 
 	input := &servicediscovery.DiscoverInstancesInput{
-		HealthStatus:  aws.String("ALL"),
-		MaxResults:    aws.Int64(10),
-		NamespaceName: aws.String("example.com"),
-		ServiceName:   aws.String("myservice"),
+		HealthStatus:  aws.String("HEALTHY"),
+		MaxResults:    aws.Int64(1),
+		NamespaceName: aws.String("local"),
+		ServiceName:   aws.String("db_svc"),
 	}
 
-	result, err := svc.DiscoverInstances(input)
+	instances, err := svc.DiscoverInstances(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case servicediscovery.ErrCodeServiceNotFound:
-				fmt.Println(servicediscovery.ErrCodeServiceNotFound, aerr.Error())
+
+				log.WithFields(
+					log.Fields{
+						"ErrorCode": servicediscovery.ErrCodeServiceNotFound,
+						"Error":     aerr.Error(),
+					},
+				).Error("Cannot find DB SVC")
+				return "", aerr
+
 			case servicediscovery.ErrCodeNamespaceNotFound:
-				fmt.Println(servicediscovery.ErrCodeNamespaceNotFound, aerr.Error())
+				log.WithFields(
+					log.Fields{
+						"ErrorCode": servicediscovery.ErrCodeNamespaceNotFound,
+						"Error":     aerr.Error(),
+					},
+				).Error("Cannot find DB SVC")
+				return "", aerr
+
 			case servicediscovery.ErrCodeInvalidInput:
-				fmt.Println(servicediscovery.ErrCodeInvalidInput, aerr.Error())
+
+				log.WithFields(
+					log.Fields{
+						"ErrorCode": servicediscovery.ErrCodeInvalidInput,
+						"Error":     aerr.Error(),
+					},
+				).Error("Cannot find DB SVC")
+				return "", aerr
+
 			default:
-				fmt.Println(aerr.Error())
+
+				log.WithFields(
+					log.Fields{
+						"Error": aerr.Error(),
+					},
+				).Error("Cannot find DB SVC")
+				return "", aerr
 			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
 		}
-		return
 	}
 
-	fmt.Println(result)
+	// Parse
+	for _, inst := range instances.Instances {
+		// TODO - This shouldn't be hardcoded -> Maybe connect to one at random instead!
+		if *inst.InstanceId == "db_svc_master" {
+			if ipv, ok := inst.Attributes["AWS_INSTANCE_IPV4"]; ok {
+				return *ipv, nil
+			}
+		}
+	}
+
+	return "", errors.New("Cannot Find DB SVC")
 }
 
 // OpenPool - Validates the options passed to `DBPoolConfig` and opens a connection the DB
@@ -122,8 +160,18 @@ func (dbcfg *DBPoolConfig) OpenPool() (err error) {
 
 	} else {
 
-		if dbcfg.Host == "" {
-			// [TODO][Get From Cloud Map] Check CloudMap and Secrets Manager...
+		if dbcfg.Host != "LOCAL" {
+			// [Get From Cloud Map] Check CloudMap and Secrets Manager...
+			ipv4, err := getDBIPv4()
+			if err != nil {
+				log.WithFields(
+					log.Fields{
+						"Error": err,
+					},
+				).Error("Cannot Connect to PGSQL")
+			}
+
+			dbcfg.Host = ipv4
 		}
 
 		connURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",

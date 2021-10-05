@@ -1,8 +1,14 @@
 #! /bin/bash
 set -x
 
-# Update the Database
-~/osm2pgsql-replication init \
+# Connect to the OSM replication server and connects to the main DB, processes updates between the two
+# services
+
+# [DEV ONLY][WARN]: Host Based Auth on the DB allows for `trust` connections within private subnet; so no PGPASSWORD
+# needed -> consider changing this for production
+
+# Update the Database 
+/osm2pgsql-replication init \
     --verbose \
     -d ${PG__DATABASE} \
     -H ${PG__HOST} \
@@ -11,7 +17,7 @@ set -x
     --prefix=osm \
     --server ${OSM__UPDATE_SERVER}
 
-~/osm2pgsql-replication update \
+/osm2pgsql-replication update \
     --verbose \
     -d ${PG__DATABASE} \
     -H ${PG__HOST} \

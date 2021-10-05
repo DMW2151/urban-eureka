@@ -1,9 +1,10 @@
-# EC2 Instance that hosts the core database for dynamic tileserver
+# EC2 Instance that hosts the core PostGIS database for dynamic tileserver.
+
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance
 resource "aws_instance" "postgis-main-1" {
 
   # Need an instance that can meet the minimum POSTGIS and h-store recommendations 
-  # for a small/medium (100-1TB) geospatial database `m6gd.large` is a graviton-backed
+  # for a small/medium (100-1TB) geospatial database `m6g.large` is a graviton-backed
   # instance with the following specs.
   # 
   #   + 2 VCPU
@@ -12,11 +13,9 @@ resource "aws_instance" "postgis-main-1" {
 
   # Basic
   # AMI Name: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20210429
-  # [NOTE]: m6gd.large is EBS optimized by default, the argument `ebs_optimized` is OPTIONAL
   ami           = "ami-00d1ab6b335f217cf"
   instance_type = "m6g.large"
   ebs_optimized = true
-
 
   # Security + Networking
   availability_zone           = var.db_subnet.availability_zone
@@ -26,12 +25,8 @@ resource "aws_instance" "postgis-main-1" {
   vpc_security_group_ids      = [var.vpc_all_traffic_sg.id, var.deployer_sg.id]
 
   # Storage
-  # 
-  # Prefer XX6d family instances to XX6. Although we can crank up IOPs on GP3 instances, 
-  # the NVME disk speeds OSM builds by ~2x. 
-  #
-  # [TODO] This is meant to be a permanant DB so GP3 > NVME for longevity + security, check the
-  # performance effect of this datadir swap
+  # [TODO] This is meant to be a permanant DB, GP3 is better than NVME for longevity + security, 
+  # check the performance effect of this datadir swap!
   root_block_device {
     volume_type           = "gp3"
     volume_size           = 1000

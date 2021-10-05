@@ -6,7 +6,6 @@ date: September 25, 2021
 
 ![](./images/sample_tiles.png)
 
-
 The following document describes benchmarks comparing AWS Graviton2-backed instances and x86-backed instances for the purpose of serving dynamic tiles from a PostGIS database server. The specs of these tests may not be a perfect analogue for realistic tile generation, but they should shed light on the relative performance of several candidate database configurations.
 
 From these tests I'd like to understand the performance benefit of hosting a PostGIS DB on a Graviton backed EC2 instance for this specific use case. I'd also like to evaluate the difference in performance between DBs hosted on NVME drives (offered by the `m6gd` family of instances) and standard `gp3` and `gp2` volumes.

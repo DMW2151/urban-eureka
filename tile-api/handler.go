@@ -66,7 +66,6 @@ func (h *PBFHandler) stageTileRequest(r *http.Request) (*TileRequest, error) {
 
 		tfos.Encoded = filterEncodedQry
 		err := tfos.decode()
-		fmt.Println(tfos.Options)
 		if err != nil {
 			// Failed to decode into a valid layer request
 			log.WithFields(
@@ -195,7 +194,7 @@ func (h *PBFHandler) generateTile(ctx context.Context, treq *TileRequest) (*Tile
 	// requests like `/{z}/{x}/{y}?filter=123` by way of the shared `filter` val...
 	if len(treq.options.Options) > 0 {
 
-		if val, err := cache.Get(treq.options.Encoded); err != notFound {
+		if val, err := cache.Get(fmt.Sprintf("%s/%s", treq.table, treq.options.Encoded)); err != notFound {
 			fmtQry := val.(string)
 			qry = &fmtQry
 		} else {
@@ -207,7 +206,10 @@ func (h *PBFHandler) generateTile(ctx context.Context, treq *TileRequest) (*Tile
 
 			fmtQry := fmt.Sprintf(*qry, strings.Join(conditions, "\n"))
 			qry = &fmtQry
-			cache.Set(treq.options.Encoded, fmtQry)
+			cache.Set(
+				fmt.Sprintf("%s/%s", treq.table, treq.options.Encoded),
+				fmtQry,
+			)
 		}
 
 	} else {
@@ -377,8 +379,6 @@ func (h *PBFHandler) HandleTileRequests(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Case: Cache Hit - Good!
-	// Send the content from the cache directly back to ResponseWriter
 	if useCache, ok := h.Options["REDIS__USE_CACHE"]; useCache.(bool) && ok {
 		xray.Capture(r.Context(), "tiles-api.redis-read", func(ctx context.Context) error {
 			tileResponse, err = h.checkCache(ctx, tileRequest)
@@ -399,6 +399,8 @@ func (h *PBFHandler) HandleTileRequests(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Case: Cache Hit - Good!
+	// Send the content from the cache directly back to ResponseWriter
 	if err == nil {
 		// Open response block and defer exit to end
 		_, seg := xray.BeginSubsegment(r.Context(), "tiles-api.response")
@@ -409,7 +411,7 @@ func (h *PBFHandler) HandleTileRequests(w http.ResponseWriter, r *http.Request) 
 		_, err := w.Write(tileResponse.Content)
 
 		if err != nil {
-			// [WARN]: Ideally We do NOT teturn an error, unwind, and treat this as a cache miss, but already
+			// [WARN]: Ideally We do NOT return an error, unwind, and treat this as a cache miss, but already
 			// wrote some content to the buffer, probably not recoverable :(
 			log.WithFields(
 				log.Fields{"Tile": tileRequest.getCacheID()},

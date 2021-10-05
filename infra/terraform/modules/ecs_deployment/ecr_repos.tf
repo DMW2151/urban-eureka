@@ -1,9 +1,13 @@
+# Create the ECR Repos for the Tileserver Tasks:
+#   - Redis
+#   - Tileserver application
+#   - Xray Agent
+#   - Nginx
+#   - OSM Updater
 
-# Create the ECR Repos for the Tileserver Tasks, one for Redis
-# one for the tileserver application itself...
-
-
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository
 resource "aws_ecr_repository" "osm-updater" {
+  # Basic
   name                 = "osm-updater"
   image_tag_mutability = "MUTABLE"
 
@@ -19,8 +23,9 @@ resource "aws_ecr_repository" "osm-updater" {
 
 }
 
-# One Repository for the Cache/Sidecar
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository
 resource "aws_ecr_repository" "tileserver-cache" {
+  # Basic
   name                 = "tileserver-cache"
   image_tag_mutability = "MUTABLE"
 
@@ -33,10 +38,12 @@ resource "aws_ecr_repository" "tileserver-cache" {
   lifecycle {
     prevent_destroy = false
   }
-
 }
 
+# One for Nginx - Sits behind the Load Balancer and Gzips the response
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository
 resource "aws_ecr_repository" "nginx" {
+  # Basic
   name                 = "nginx"
   image_tag_mutability = "MUTABLE"
 
@@ -53,7 +60,9 @@ resource "aws_ecr_repository" "nginx" {
 }
 
 # One Repository for the Application/API
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository
 resource "aws_ecr_repository" "tileserver-api" {
+  # Basic
   name                 = "tileserver-api"
   image_tag_mutability = "MUTABLE"
 
@@ -69,6 +78,7 @@ resource "aws_ecr_repository" "tileserver-api" {
 }
 
 # One Repository for the Xray Agent
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository
 resource "aws_ecr_repository" "xray-agent" {
   name                 = "xray-agent"
   image_tag_mutability = "MUTABLE"
