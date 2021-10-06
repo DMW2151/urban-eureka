@@ -26,7 +26,7 @@ resource "aws_spot_instance_request" "builder-1" {
   # Leaving price at 0.00 so request expires immediatley, effectively bypassing `builder` stage
   spot_price           = "0.25"
   spot_type            = "one-time"
-  valid_until          = timeadd(timestamp(), "5m") ## TODO: Accept Variable here -> This can be set to 5ms (DO NOT FILL) or 5m (FILL)
+  valid_until          = timeadd(timestamp(), "5ms") ## TODO: Accept Variable here -> This can be set to 5ms (DO NOT FILL) or 5m (FILL)
   wait_for_fulfillment = true
 
   # Security + Networking 

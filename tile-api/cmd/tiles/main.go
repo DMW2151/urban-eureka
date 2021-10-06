@@ -37,9 +37,9 @@ var (
 		Options: map[string]interface{}{
 			// [TODO] Get these from vars and parse..
 			"REDIS__USE_CACHE":         true,   // os.Getenv("REDIS__USE_CACHE"),
-			"REDIS__CACHE_LIMIT_BYTES": 131072, // os.Getenv("REDIS__CACHE_LIMIT_BYTES"),
-			"API__RETURN_LIMIT_BYTES":  131072, // os.Getenv("API__RETURN_LIMIT_BYTES"),
-			"REDIS__CACHE_TTL":         30,     // os.Getenv("REDIS__CACHE_TTL"),
+			"REDIS__CACHE_LIMIT_BYTES": 262144, // os.Getenv("REDIS__CACHE_LIMIT_BYTES"),
+			"API__RETURN_LIMIT_BYTES":  262144, // os.Getenv("API__RETURN_LIMIT_BYTES"),
+			"REDIS__CACHE_TTL":         600,    // os.Getenv("REDIS__CACHE_TTL"),
 		},
 	}
 )

@@ -8,7 +8,9 @@
 function copyHash() {
     var c = document.getElementById("layer-hash-input");
     c.select();
-    navigator.clipboard.writeText(window.location.protocol + window.location.pathname + "?filter=" + c.value);
+    navigator.clipboard.writeText(
+        window.location.protocol + "//" + window.location.hostname + window.location.pathname + "?filter=" + c.value
+    );
 }
 
 // Allow use of arrows + shift && arrows for navigation...

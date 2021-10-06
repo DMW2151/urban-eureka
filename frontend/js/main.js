@@ -13,11 +13,11 @@ const container = document.getElementById('popup');
 const content = document.getElementById('popup-content');
 var currentLayer = "point"
 
-// Default Source - Query our backend service - tiles.maphub.dev - for geometry data
+// Default Source - Query our backend service - api.maphub.dev - for geometry data
 var src = new VectorTileSource({
   format: new MVT(),
   attributions: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-  url: 'https://tiles.maphub.dev/point/{z}/{x}/{y}'
+  url: 'https://api.maphub.dev/point/{z}/{x}/{y}'
 })
 
 // Adjust URL
@@ -36,7 +36,7 @@ function urlAdjust(){
     // Set Src URL...
     src.clear()
     src.setUrl(
-      "https://tiles.maphub.dev/" + currentLayer + "/{z}/{x}/{y}?filter=" + filterHash
+      "https://api.maphub.dev/" + currentLayer + "/{z}/{x}/{y}?filter=" + filterHash
     );
   }
 }
@@ -77,13 +77,13 @@ function scaleControl() {
 // and (higher) than 18 (e.g. won't try to return 1000km^2 areas or 1^m areas, do this to save
 // some API calls...)
 var mainlayer = new VectorTileLayer({
-  minZoom: 5,
+  minZoom: 8,
   maxZoom: 20,
   // Points == Black
   // Polygon, Line, Roads == Light Blue
   style: new Style({
     image: new Circle({
-      radius: 3,
+      radius: 2.5,
       fill: new Fill({ color: 'black'}),
     }),
     stroke: new Stroke({
@@ -144,9 +144,9 @@ function updateBaseLayer(path) {
   src.clear()
   // Update the Path...
   if (src.getUrls().some(matchfilter)){
-    src.setUrl("https://tiles.maphub.dev/" + path + "/{z}/{x}/{y}?filter=" + currentFilter);
+    src.setUrl("https://api.maphub.dev/" + path + "/{z}/{x}/{y}?filter=" + currentFilter);
   } else {
-    src.setUrl("https://tiles.maphub.dev/" + path + "/{z}/{x}/{y}");
+    src.setUrl("https://api.maphub.dev/" + path + "/{z}/{x}/{y}");
   }
 }
 
@@ -166,7 +166,7 @@ function enableFilter(){
   var currentFilter = document.getElementById('layer-hash-input').value
   src.clear()
   src.setUrl(
-    "https://tiles.maphub.dev/" + currentLayer + "/{z}/{x}/{y}?filter=" + currentFilter
+    "https://api.maphub.dev/" + currentLayer + "/{z}/{x}/{y}?filter=" + currentFilter
   ); 
 }
 
@@ -184,7 +184,7 @@ function clearFilter(){
 
   src.clear()
   src.setUrl(
-    "https://tiles.maphub.dev/" + currentLayer + "/{z}/{x}/{y}"
+    "https://api.maphub.dev/" + currentLayer + "/{z}/{x}/{y}"
   );
 }
 

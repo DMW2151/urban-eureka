@@ -26,17 +26,26 @@ export OSM_READER_PGPASSWORD=`(aws ssm get-parameters --names osm_pg__worker_pwd
 # Create a writer role with DB ownership...
 sudo -i -u postgres createuser osm_worker &&\
 sudo -i -u postgres createdb geospatial_core -O postgres &&\
-sudo -i -u postgres psql -d geospatial_core -U postgres -c "ALTER USER osm_worker WITH password '$OSM_WORKER_PGPASSWORD';"
+
+sudo -i -u postgres psql\
+    -d geospatial_core\
+    -U postgres\
+    -c "ALTER USER osm_worker WITH password '$OSM_WORKER_PGPASSWORD';"
 
 # Create a reader role with very minimal permissions && initialize the main schema for the service
 sudo -i -u postgres createuser osm_reader &&\
-    sudo -i -u postgres psql -d geospatial_core -U postgres -c "ALTER USER osm_reader WITH password '$OSM_READER_PGPASSWORD';"
+    sudo -i -u postgres psql -d geospatial_core -U postgres \
+    -c "ALTER USER osm_reader WITH password '$OSM_READER_PGPASSWORD';"
 
 sudo -i -u postgres psql -d geospatial_core -U postgres -c """
     CREATE SCHEMA osm; 
     GRANT USAGE ON SCHEMA osm TO osm_reader;
     GRANT SELECT ON ALL TABLES IN SCHEMA osm TO osm_reader;
     ALTER DEFAULT PRIVILEGES IN SCHEMA osm GRANT SELECT ON TABLES TO osm_reader;
+"""
+
+sudo -i -u postgres psql -d geospatial_core -U postgres -c """
+    ALTER SCHEMA osm OWNER to osm_worker;
 """
 
 # Add Extenstions for OSM2PGSQL
@@ -72,3 +81,14 @@ sudo sed -ie '/^# "local"/a local      geospatial_core     osm_worker        md5
 # Much safer to stop and then start postgresql rather than `restart`!!
 sudo systemctl stop postgresql &&\
 sudo systemctl start postgresql
+
+
+# Add cloudwatch agent
+sudo wget https://s3.us-east-1.amazonaws.com/amazoncloudwatch-agent-us-east-1/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb &&\
+    sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+
+sudo touch /opt/aws/amazon-cloudwatch-agent/bin/config.json &&\
+sudo chmod 777 /opt/aws/amazon-cloudwatch-agent/bin/config.json &&\
+    echo `(aws ssm get-parameters --names cw_agent__config --region=us-east-1 | jq -r '.Parameters | first | .Value' | base64 -d)`  >> /opt/aws/amazon-cloudwatch-agent/bin/config.json
+
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json

@@ -160,7 +160,7 @@ func (dbcfg *DBPoolConfig) OpenPool() (err error) {
 
 	} else {
 
-		if dbcfg.Host != "LOCAL" {
+		if dbcfg.Host == "" {
 			// [Get From Cloud Map] Check CloudMap and Secrets Manager...
 			ipv4, err := getDBIPv4()
 			if err != nil {
@@ -182,14 +182,14 @@ func (dbcfg *DBPoolConfig) OpenPool() (err error) {
 
 		if err != nil {
 			log.WithFields(
-				log.Fields{"Connection Info": connURL, "Error": err},
+				log.Fields{"Error": err},
 			).Error("Cannot Connect to PGSQL")
 			return
 		}
 
 		// Successful Connection...
 		log.WithFields(
-			log.Fields{"Connection Info": connURL},
+			log.Fields{"Connection Info": "NULL"},
 		).Info("Init DB connection pool with X-ray Tracing requests")
 	}
 

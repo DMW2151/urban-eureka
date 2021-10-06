@@ -29,7 +29,7 @@ resource "aws_instance" "postgis-main-1" {
   # check the performance effect of this datadir swap!
   root_block_device {
     volume_type           = "gp3"
-    volume_size           = 1000
+    volume_size           = 600
     iops                  = 3000
     throughput            = 125
     delete_on_termination = true
@@ -39,6 +39,11 @@ resource "aws_instance" "postgis-main-1" {
       Module = "Database Instances"
     }
 
+  }
+
+  # prevent destroy - allow safe updates!
+  lifecycle {
+    prevent_destroy = true
   }
 
   # User Data

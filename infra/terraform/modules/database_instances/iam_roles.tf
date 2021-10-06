@@ -40,6 +40,25 @@ resource "aws_iam_policy" "ssm_reader" {
       }
     ]
   })
+}
+
+
+resource "aws_iam_policy" "svc_discovery_reader" {
+
+  name = "osm_db_svc_discovery_reader"
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "servicediscovery:DiscoverInstances",
+        ],
+        "Resource" : "*"
+      }
+    ]
+  })
 
 }
 
@@ -91,6 +110,13 @@ resource "aws_iam_role" "osm_db_profile" {
   managed_policy_arns = [
     aws_iam_policy.ssm_reader.arn,
   ]
+}
+
+# Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
+# See: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-commandline-fleet.html
+resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
+  role       = aws_iam_role.osm_db_profile.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role

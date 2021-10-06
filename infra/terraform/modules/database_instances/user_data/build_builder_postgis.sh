@@ -24,7 +24,7 @@ sudo apt-get -y install \
     libboost-filesystem-dev libexpat1-dev zlib1g-dev \
     libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc \
     postgresql-13 postgresql-client-13 postgis postgresql-13-postgis-3 \
-    build-essential gdal-bin awscli jq git
+    build-essential gdal-bin awscli jq git osmium-tool
 
 # Manual Install for OSM2PGSQL Version 1.4.1, not available via apt on 20.04
 sudo git clone https://github.com/openstreetmap/osm2pgsql.git 1.4.1 &&\

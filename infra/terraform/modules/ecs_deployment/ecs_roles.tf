@@ -11,6 +11,8 @@
 # Don't need to add XRAY or the like to the execution role, but need to make sure that 
 # the ECS machine has X-RAY!
 #
+# Does need cloud map though! [TODO]: Define this as a resource rather than the modified `ecsTaskExecutionRole`
+#
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
 # Resource Note: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html#create-task-execution-role
 data "aws_iam_role" "ecs_task_execution_role" {
@@ -22,7 +24,7 @@ data "aws_iam_role" "ecs_task_execution_role" {
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
 resource "aws_iam_role" "ecs_agent" {
   name               = "ecs-agent"
-  assume_role_policy = data.aws_iam_policy_document.ecs_agent.json
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
   managed_policy_arns = [
     aws_iam_policy.xray_all.arn,
     aws_iam_policy.ecs_full.arn,
@@ -76,7 +78,7 @@ resource "aws_iam_policy" "ecs_full" {
 }
 
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
-data "aws_iam_policy_document" "ecs_agent" {
+data "aws_iam_policy_document" "ec2_assume_role" {
 
   statement {
     actions = ["sts:AssumeRole"]

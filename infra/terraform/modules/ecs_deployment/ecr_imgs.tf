@@ -45,7 +45,7 @@ resource "null_resource" "push-nginx-img" {
 
 resource "null_resource" "push-api-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../tile-api/ tileserver-api development linux/amd64"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../tile-api/ tileserver-api development linux/aarch64"
   }
 
   depends_on = [
@@ -71,7 +71,7 @@ data "aws_ecr_image" "osm-updater-img" {
 
 resource "null_resource" "push-xray-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../xray-agent xray-agent development linux/amd64"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../xray-agent xray-agent development linux/aarch64"
   }
 
   depends_on = [

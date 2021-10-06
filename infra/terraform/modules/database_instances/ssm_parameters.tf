@@ -7,6 +7,13 @@ resource "random_string" "osm_pg__worker_pwd" {
   special = false
 }
 
+
+resource "aws_ssm_parameter" "cloudwatch_agent_cfg" {
+  name  = "cw_agent__config"
+  type  = "String"
+  value = filebase64("./../modules/database_instances/config/cloudwatch_agent.json")
+}
+
 # Password for OSM Builder/Worker instance
 # Resource: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter
 resource "aws_ssm_parameter" "osm_pg__worker_pwd" {

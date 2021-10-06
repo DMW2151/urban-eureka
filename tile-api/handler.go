@@ -139,7 +139,7 @@ func (h *PBFHandler) stageTileRequest(r *http.Request) (*TileRequest, error) {
 		yMin:          mercatorW - tileMercSize*(Y+1),
 		yMax:          mercatorW - tileMercSize*Y,
 		reqArray:      [3]float64{Z, X, Y},
-		segSize:       (tileMercSize / oneDegreeLngAdjusted) * 0.25,
+		segSize:       (tileMercSize / oneDegreeLngAdjusted) * 0.50,
 		polygonThresh: (tileMercSize / oneDegreeLngAdjusted) * 0.001,
 		table:         layer,
 		options:       tfos,

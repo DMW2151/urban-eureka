@@ -18,4 +18,4 @@ RUN wget https://raw.githubusercontent.com/openstreetmap/osm2pgsql/master/script
 
 RUN apt-get clean
 
-CMD ["/osm_replicate_2.sh"]
+CMD ["/osm_replicate.sh"]

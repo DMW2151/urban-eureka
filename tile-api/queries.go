@@ -13,7 +13,7 @@ var OSMPtsQry string = `SELECT ST_AsMVT(a1.*) as pbf FROM (
 	WHERE c2.way && ST_MakeEnvelope($1, $2, $3, $4, 3857)
 	%s
 	ORDER BY RANDOM()
-	LIMIT 5000
+	LIMIT 1000
 ) a1;`
 
 // OSMLinesQry -
