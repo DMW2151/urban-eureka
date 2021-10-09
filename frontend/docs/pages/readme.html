@@ -17,7 +17,7 @@
     }
     body {
       margin: 0 auto;
-      max-width: 36em;
+      max-width: 48em;
       padding-left: 50px;
       padding-right: 50px;
       padding-top: 50px;
@@ -219,18 +219,17 @@
 <p class="author">Dustin Wilson</p>
 <p class="date">September 25, 2021</p>
 </header>
-<figure>
-<img src="./../images/sample_tiles.png" alt="A single tile" /><figcaption aria-hidden="true">A single tile</figcaption>
-</figure>
+<p><img src="./images/sample_tiles.png" /></p>
 <p>The following document describes benchmarks comparing AWS Graviton2-backed instances and x86-backed instances for the purpose of serving dynamic tiles from a PostGIS database server. The specs of these tests may not be a perfect analogue for realistic tile generation, but they should shed light on the relative performance of several candidate database configurations.</p>
 <p>From these tests I’d like to understand the performance benefit of hosting a PostGIS DB on a Graviton backed EC2 instance for this specific use case. I’d also like to evaluate the difference in performance between DBs hosted on NVME drives (offered by the <code>m6gd</code> family of instances) and standard <code>gp3</code> and <code>gp2</code> volumes.</p>
 <hr />
 <h2 id="results-summary">Results Summary</h2>
 <ol type="1">
-<li><p>PostGIS instances hosted on <code>m6gd.large</code> offer better tile-serving performance compared to an equivalent x86 instance (<code>t3.large</code>). Testing tile-generation on a <code>m6gd.large</code> instance yielded 60% more tile requests/second for layers comprised of points and polygons.</p></li>
+<li><p>A PostGIS instance deployed on a <code>m6gd.large</code> offers better tile-serving performance compared to an equivalent x86 instance (<code>t3.large</code>). Testing tile-generation on a <code>m6gd.large</code> instance yielded 60% more tile requests/second for layers comprised of points and polygons.</p></li>
 <li><p>There is minimal distinction in tile-serving performance between a DB running on ephemeral NVME or <code>gp3</code> volume. Given this fact, I will provision a <code>gp3</code> instance to host my DB instead of (dangerously) relying on ephemeral NVME storage from the <code>m6gd</code> family.</p></li>
 <li><p>There is minimal distinction in tile-serving performance between the default PostGIS parameters and “optimized” parameters. These parameters may be geared for analytical, rather than transactional workloads. I will proceed with PostGIS suggested parameters, seems that they will do no harm during periods of light load and may boost performance under heavy load.</p></li>
-<li><p>Loading OSM data to PostgreSQL is memory intensive. Performance is difficult to isolate because the process involves CPU, disk, and memory heavy components. In general, a <code>m6g.4xlarge</code> instance can load a small (3GB) sized OSM extract <strong>3x</strong> faster than a <code>m6g.large</code> instance. The greatest difference in performance came from the <code>CREATE INDEX</code> stages which ran <strong>5x</strong> faster on the larger instance. I’ll use a large, spot instance to load the OSM data to PostgreSQL and dump it to a DB running on a more affordable instance.</p></li>
+<li><p>Loading OSM data to PostgreSQL is memory intensive. Performance is difficult to isolate because the process involves CPU, disk, and memory heavy components. In general, a <code>m6g.4xlarge</code> instance can load a small (3GB) sized OSM extract <strong>3x</strong> faster than a <code>m6g.large</code> instance. The greatest difference in performance came from the <code>CREATE INDEX</code> stages which ran <strong>5x</strong> faster on the larger instance. I’ll use a 4XL spot instance to load the OSM data to PostgreSQL and dump it to a DB running on a more affordable instance.</p></li>
+<li><p>Redis, while a peripheral element of this system, is still worth testing. When using large keys to simulate cached map tiles, Redis performed 1.5-2x faster on m6g relative to t3 instances.</p></li>
 </ol>
 <hr />
 <h2 id="system-setup">0.1 System Setup</h2>
@@ -793,5 +792,59 @@
 <span id="cb9-6"><a href="#cb9-6"></a></span>
 <span id="cb9-7"><a href="#cb9-7"></a>Planning <span class="dt">Time</span>: <span class="fl">0.229</span> ms</span>
 <span id="cb9-8"><a href="#cb9-8"></a>Execution <span class="dt">Time</span>: <span class="fl">372.143</span> ms</span></code></pre></div>
+<h2 id="a.2---a-bonus-test---redis">A.2 - A Bonus Test - Redis</h2>
+<p>Redis is very fast, but the performance of Redis can be inflated by these tests. Fetching data from the cache, albeit 2x as slow on x86 instances, is still very fast. The bulk of the performance bottleneck in my system is PostGIS, but I also performed some Redis benchmarks to see what affect architecture has on setting and gettinng medium-large sized (32kb) keys.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource bash numberLines"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">## Setup</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="fu">sudo</span> apt-get update <span class="kw">&amp;&amp;</span><span class="dt">\</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>    <span class="ex">apt-get</span> install <span class="at">-y</span> redis-server</span>
+<span id="cb10-4"><a href="#cb10-4"></a></span>
+<span id="cb10-5"><a href="#cb10-5"></a><span class="co">## Test</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="ex">redis-benchmark</span> <span class="at">-t</span> set,get <span class="at">-n</span> 100000 <span class="at">-d</span> 32000</span></code></pre></div>
+<p>Using ARM instances:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource bash numberLines"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1"></a><span class="ex">======</span> GET ======</span>
+<span id="cb11-2"><a href="#cb11-2"></a>  <span class="ex">100000</span> requests completed in 1.68 seconds</span>
+<span id="cb11-3"><a href="#cb11-3"></a>  <span class="ex">50</span> parallel clients</span>
+<span id="cb11-4"><a href="#cb11-4"></a>  <span class="ex">32000</span> bytes payload</span>
+<span id="cb11-5"><a href="#cb11-5"></a>  <span class="ex">keep</span> alive: 1</span>
+<span id="cb11-6"><a href="#cb11-6"></a></span>
+<span id="cb11-7"><a href="#cb11-7"></a><span class="ex">99.83%</span> <span class="op">&lt;</span>= 1 milliseconds</span>
+<span id="cb11-8"><a href="#cb11-8"></a><span class="ex">100.00%</span> <span class="op">&lt;</span>= 1 milliseconds</span>
+<span id="cb11-9"><a href="#cb11-9"></a><span class="ex">59347.18</span> requests per second</span>
+<span id="cb11-10"><a href="#cb11-10"></a></span>
+<span id="cb11-11"><a href="#cb11-11"></a><span class="ex">======</span> SET ======</span>
+<span id="cb11-12"><a href="#cb11-12"></a>  <span class="ex">100000</span> requests completed in 1.31 seconds</span>
+<span id="cb11-13"><a href="#cb11-13"></a>  <span class="ex">50</span> parallel clients</span>
+<span id="cb11-14"><a href="#cb11-14"></a>  <span class="ex">32000</span> bytes payload</span>
+<span id="cb11-15"><a href="#cb11-15"></a>  <span class="ex">keep</span> alive: 1</span>
+<span id="cb11-16"><a href="#cb11-16"></a></span>
+<span id="cb11-17"><a href="#cb11-17"></a><span class="ex">99.98%</span> <span class="op">&lt;</span>= 1 milliseconds</span>
+<span id="cb11-18"><a href="#cb11-18"></a><span class="ex">100.00%</span> <span class="op">&lt;</span>= 1 milliseconds</span>
+<span id="cb11-19"><a href="#cb11-19"></a><span class="ex">76219.51</span> requests per second</span></code></pre></div>
+<p>Using X86 Instances:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource bash numberLines"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1"></a><span class="ex">======</span> SET ======</span>
+<span id="cb12-2"><a href="#cb12-2"></a>  <span class="ex">100000</span> requests completed in 2.41 seconds</span>
+<span id="cb12-3"><a href="#cb12-3"></a>  <span class="ex">50</span> parallel clients</span>
+<span id="cb12-4"><a href="#cb12-4"></a>  <span class="ex">32000</span> bytes payload</span>
+<span id="cb12-5"><a href="#cb12-5"></a>  <span class="ex">keep</span> alive: 1</span>
+<span id="cb12-6"><a href="#cb12-6"></a></span>
+<span id="cb12-7"><a href="#cb12-7"></a><span class="ex">30.90%</span> <span class="op">&lt;</span>= 1 milliseconds</span>
+<span id="cb12-8"><a href="#cb12-8"></a><span class="ex">99.62%</span> <span class="op">&lt;</span>= 2 milliseconds</span>
+<span id="cb12-9"><a href="#cb12-9"></a><span class="ex">99.89%</span> <span class="op">&lt;</span>= 3 milliseconds</span>
+<span id="cb12-10"><a href="#cb12-10"></a><span class="ex">99.91%</span> <span class="op">&lt;</span>= 4 milliseconds</span>
+<span id="cb12-11"><a href="#cb12-11"></a><span class="ex">99.98%</span> <span class="op">&lt;</span>= 5 milliseconds</span>
+<span id="cb12-12"><a href="#cb12-12"></a><span class="ex">99.98%</span> <span class="op">&lt;</span>= 6 milliseconds</span>
+<span id="cb12-13"><a href="#cb12-13"></a><span class="ex">100.00%</span> <span class="op">&lt;</span>= 6 milliseconds</span>
+<span id="cb12-14"><a href="#cb12-14"></a><span class="ex">41425.02</span> requests per second</span>
+<span id="cb12-15"><a href="#cb12-15"></a></span>
+<span id="cb12-16"><a href="#cb12-16"></a><span class="ex">======</span> GET ======</span>
+<span id="cb12-17"><a href="#cb12-17"></a>  <span class="ex">100000</span> requests completed in 2.64 seconds</span>
+<span id="cb12-18"><a href="#cb12-18"></a>  <span class="ex">50</span> parallel clients</span>
+<span id="cb12-19"><a href="#cb12-19"></a>  <span class="ex">32000</span> bytes payload</span>
+<span id="cb12-20"><a href="#cb12-20"></a>  <span class="ex">keep</span> alive: 1</span>
+<span id="cb12-21"><a href="#cb12-21"></a></span>
+<span id="cb12-22"><a href="#cb12-22"></a><span class="ex">79.24%</span> <span class="op">&lt;</span>= 1 milliseconds</span>
+<span id="cb12-23"><a href="#cb12-23"></a><span class="ex">99.95%</span> <span class="op">&lt;</span>= 2 milliseconds</span>
+<span id="cb12-24"><a href="#cb12-24"></a><span class="ex">100.00%</span> <span class="op">&lt;</span>= 2 milliseconds</span>
+<span id="cb12-25"><a href="#cb12-25"></a><span class="ex">37864.45</span> requests per second</span></code></pre></div>
 </body>
 </html>

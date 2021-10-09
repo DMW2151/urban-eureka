@@ -45,7 +45,7 @@ resource "null_resource" "push-nginx-img" {
 
 resource "null_resource" "push-api-img" {
   provisioner "local-exec" {
-    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../tile-api/ tileserver-api development linux/aarch64"
+    command = "/bin/bash ../modules/ecs_deployment/localexec/buildx_and_push_img.sh ./../../../tile-api/ tileserver-api development linux/amd64"
   }
 
   depends_on = [

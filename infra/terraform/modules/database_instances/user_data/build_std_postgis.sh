@@ -57,6 +57,7 @@ sudo -i -u postgres psql -d geospatial_core -c "CREATE EXTENSION hstore;"
 echo """
     ALTER SYSTEM SET shared_buffers TO '1GB';
     ALTER SYSTEM SET work_mem TO '64MB';
+
     
     ALTER SYSTEM SET random_page_cost TO 1.0;
 

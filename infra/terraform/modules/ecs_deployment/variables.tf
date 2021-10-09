@@ -10,8 +10,8 @@ variable "core_vpc" {
 variable "ssm_reader" {
   description = "..."
   type = object({
-    name                   = string
-    arn                  = string
+    name = string
+    arn  = string
   })
 }
 

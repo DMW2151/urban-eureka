@@ -22,6 +22,8 @@ From these tests I'd like to understand the performance benefit of hosting a Pos
   
 4. Loading OSM data to PostgreSQL is memory intensive. Performance is difficult to isolate because the process involves CPU, disk, and memory heavy components. In general, a `m6g.4xlarge` instance can load a small (3GB) sized OSM extract **3x** faster than a `m6g.large` instance. The greatest difference in performance came from the `CREATE INDEX` stages which ran **5x** faster on the larger instance. I'll use a 4XL spot instance to load the OSM data to PostgreSQL and dump it to a DB running on a more affordable instance.
 
+5. Redis, while a peripheral element of this system, is still worth testing. When using large keys to simulate cached map tiles, Redis performed 1.5-2x faster on m6g relative to t3 instances.
+
 ---------------
 
 ## 0.1 System Setup
@@ -313,4 +315,72 @@ Aggregate (actual time=371.264..371.265 rows=1 loops=1)
 
 Planning Time: 0.229 ms
 Execution Time: 372.143 ms
+```
+
+## A.2 - A Bonus Test - Redis
+
+Redis is very fast, but the performance of Redis can be inflated by these tests. Fetching data from the cache, albeit 2x as slow on x86 instances, is still very fast. The bulk of the performance bottleneck in my system is PostGIS, but I also performed some Redis benchmarks to see what affect architecture has on setting and gettinng medium-large sized (32kb) keys.
+
+```{.bash .numberLines}
+## Setup
+sudo apt-get update &&\
+    apt-get install -y redis-server
+
+## Test
+redis-benchmark -t set,get -n 100000 -d 32000
+```
+
+Using ARM instances:
+
+```{.bash .numberLines}
+====== GET ======
+  100000 requests completed in 1.68 seconds
+  50 parallel clients
+  32000 bytes payload
+  keep alive: 1
+
+99.83% <= 1 milliseconds
+100.00% <= 1 milliseconds
+59347.18 requests per second
+
+====== SET ======
+  100000 requests completed in 1.31 seconds
+  50 parallel clients
+  32000 bytes payload
+  keep alive: 1
+
+99.98% <= 1 milliseconds
+100.00% <= 1 milliseconds
+76219.51 requests per second
+```
+
+
+Using X86 Instances:
+
+```{.bash .numberLines}
+====== SET ======
+  100000 requests completed in 2.41 seconds
+  50 parallel clients
+  32000 bytes payload
+  keep alive: 1
+
+30.90% <= 1 milliseconds
+99.62% <= 2 milliseconds
+99.89% <= 3 milliseconds
+99.91% <= 4 milliseconds
+99.98% <= 5 milliseconds
+99.98% <= 6 milliseconds
+100.00% <= 6 milliseconds
+41425.02 requests per second
+
+====== GET ======
+  100000 requests completed in 2.64 seconds
+  50 parallel clients
+  32000 bytes payload
+  keep alive: 1
+
+79.24% <= 1 milliseconds
+99.95% <= 2 milliseconds
+100.00% <= 2 milliseconds
+37864.45 requests per second
 ```

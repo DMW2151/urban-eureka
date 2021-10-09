@@ -5,9 +5,10 @@
 sudo amazon-linux-extras install epel
 
 # Basic utils
-sudo yum update &&\
-sudo yum install -y \
+sudo yum update && \
+    sudo yum install -y \
     awscli \
     sysstat \
     postgresql-server \
+    postgresql-client \
     jq

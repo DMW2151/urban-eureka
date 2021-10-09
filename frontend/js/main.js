@@ -77,7 +77,7 @@ function scaleControl() {
 // and (higher) than 18 (e.g. won't try to return 1000km^2 areas or 1^m areas, do this to save
 // some API calls...)
 var mainlayer = new VectorTileLayer({
-  minZoom: 8,
+  minZoom: 9,
   maxZoom: 20,
   // Points == Black
   // Polygon, Line, Roads == Light Blue
@@ -108,10 +108,8 @@ map = new Map({
   ],
   // Default view starts in NYC
   view: new View({
-    // center - Test 01 (Tunisia): [1234010, 3965000], 
-    // center - Test 02 (NYC): [-8234010, 4965000], 
-    center: [-8234010 - 160000, 4965000 - 160000], 
-    zoom: 10,
+    center: [-8234010, 4965000], 
+    zoom: 14,
   })
 });
 

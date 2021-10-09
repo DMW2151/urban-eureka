@@ -24,7 +24,7 @@ resource "aws_security_group" "lb_sg" {
       var.core_vpc.cidr_block
     ]
   }
-  
+
   # LB is internet facing; send traffic to anywhere
   egress {
     from_port        = 0

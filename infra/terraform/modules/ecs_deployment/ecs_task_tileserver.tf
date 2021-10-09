@@ -12,8 +12,8 @@ resource "aws_ecs_task_definition" "tileserver-api" {
   ]
 
   # Resource Allocation - Assumes we're using a r6 medium w. 1024 CPU shares + 8GB memory
-  cpu    = 1024   # 1 CPU 
-  memory = "6000" # just under 8 GB Memory to match on 8GB instances...  - Don't plan to use or reserve all of it!
+  cpu    = 1536   # 1.5 CPU, allow a little bit for the replication daemon
+  memory = "3072" # just under 4 GB Memory to match on 4GB instances...  - Don't plan to use or reserve all of it!
 
   # Networking/Security
   network_mode = "bridge"
@@ -35,7 +35,6 @@ resource "aws_ecs_task_definition" "tileserver-api" {
         "memory" : 512,
         "memoryReservation" : 128,
 
-
         # Start/Stop Timeouts on the Container...
         "startTimeout" : 60,
         "stopTimeout" : 60,
@@ -52,7 +51,7 @@ resource "aws_ecs_task_definition" "tileserver-api" {
           },
           {
             "name" : "PG__PASSWORD",
-            "value" : "${var.osm_pg__worker_pwd}"  // [TODO]: Change Application to Use Secrets Manager...
+            "value" : "${var.osm_pg__worker_pwd}" // [TODO]: Change Application to Use Secrets Manager...
           },
           {
             "name" : "PG__PORT",
@@ -129,8 +128,8 @@ resource "aws_ecs_task_definition" "tileserver-api" {
         "essential" : true,
 
         # Resource Requirements
-        "cpu" : 128,
-        "memory" : 4096,
+        "cpu" : 256,
+        "memory" : 2048,
         "memoryReservation" : 256,
 
         # Start/Stop Timeouts on the Container...
@@ -155,16 +154,20 @@ resource "aws_ecs_task_definition" "tileserver-api" {
           }
         },
 
-        # Port Mappings - Expose 2151 to Serve Requests
       },
 
       # Task #3 - Nginx
       {
         "name" : "nginx",
-        "image" : "${data.aws_ecr_image.tileserver-cache-img.registry_id}.dkr.ecr.${var.default_region}.amazonaws.com/${data.aws_ecr_image.nginx-img.repository_name}:${var.image_tag}",
+        "image" : "${data.aws_ecr_image.nginx-img.registry_id}.dkr.ecr.${var.default_region}.amazonaws.com/${data.aws_ecr_image.nginx-img.repository_name}:${var.image_tag}",
 
-        "cpu" : 128,
-        "memory" : 128,
+        # https://www.nginx.com/blog/performance-tuning-tips-tricks/
+        # w. 1/2 CPU core we get about 500MB/s from Nginx very comfortably, the memory footprint is WAY lower than suggested
+        # CPU - Allocate 1 CPU core per 1–2 Gbps of unencrypted traffic.
+        # RAM - Allocate 1 GB for OS and other general needs.
+
+        "cpu" : 512,
+        "memory" : 256,
         "memoryReservation" : 128,
 
         "essential" : true,
@@ -193,12 +196,12 @@ resource "aws_ecs_task_definition" "tileserver-api" {
       # Task #4 - AWS XRay Agent
       {
         "name" : "xray-daemon",
-        "image" : "${data.aws_ecr_image.tileserver-cache-img.registry_id}.dkr.ecr.${var.default_region}.amazonaws.com/${data.aws_ecr_image.xray-agent-img.repository_name}:${var.image_tag}",
+        "image" : "${data.aws_ecr_image.xray-agent-img.registry_id}.dkr.ecr.${var.default_region}.amazonaws.com/${data.aws_ecr_image.xray-agent-img.repository_name}:${var.image_tag}",
         "essential" : false,
 
-        "cpu" : 128,
+        "cpu" : 256,
         "memory" : 128,
-        "memoryReservation" : 128,
+        "memoryReservation" : 64,
 
         "environment" : [
           {

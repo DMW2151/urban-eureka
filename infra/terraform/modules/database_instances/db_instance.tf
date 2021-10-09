@@ -32,7 +32,7 @@ resource "aws_instance" "postgis-main-1" {
     volume_size           = 600
     iops                  = 3000
     throughput            = 125
-    delete_on_termination = true
+    delete_on_termination = false
 
     tags = {
       Name   = "PostGIS Main - 1 - Root Volume"

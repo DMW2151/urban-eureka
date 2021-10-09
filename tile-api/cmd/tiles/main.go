@@ -60,8 +60,8 @@ func init() {
 	log.SetOutput(os.Stdout)
 
 	log.SetFormatter(&log.TextFormatter{
-		TimestampFormat: "2006-01-02 15:04:05.0000",
 		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05.0000",
 	})
 
 	// Configure XRay Tracing

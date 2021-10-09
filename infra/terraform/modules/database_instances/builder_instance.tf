@@ -12,7 +12,7 @@ resource "aws_spot_instance_request" "builder-1" {
   #
   # Need an instance that can meet the minimum POSTGIS and h-store recommendations 
   # for a medium (100GB-1TB) geospatial database `r6g.2xlarge` will do
-  
+
   # I expect these jobs to be up for ~10 hrs, so a cost of ~ $2-3 is expected. 
   # **If** the scope of the job changes to include the entire world, bump to 
   # `m6gd.4xlarge`

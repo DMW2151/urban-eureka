@@ -20,7 +20,7 @@ resource "aws_ecs_cluster" "backend_ecs_cluster" {
         cloud_watch_encryption_enabled = true
         cloud_watch_log_group_name     = aws_cloudwatch_log_group.tileserver-cluster.name
       }
-      
+
     }
   }
 
