@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+      <title>Dynamic Tileserver</title>
+      <link rel="stylesheet" href="https://openlayers.org/en/latest/css/ol.css" type="text/css">
+      <link rel="stylesheet" href="./css/elc.css" type="text/css">
+    </head>
+    <body> 
+    <div class="topnav">
+        <div class="pointer" onclick="toggle_elem('about-overlay')"> About </div>
+        <div class="pointer" onclick="toggle_elem('rules-overlay')"> Apply Layer Filter</div>
+        <div class="pointer dropdown"> Select Object Layer
+            <div class="pointer dropdown-content">
+              <button class="pointer switcher" value="line">Lines</button>
+              <button class="pointer switcher" value="roads">Roads</button>
+              <button class="pointer switcher" value="point">Points</button>
+              <button class="pointer switcher" value="polygon">Polygon</button>
+            </div>
+        </div>
+        <div id='contrib-osm' class="pointer">Contribute Data to OSM</div>
+    </div>
+
+    <div id="map" onkeydown="keyboard_navig(event)" tabindex="0">
+    </div>
+    
+    <div id="overlay" style="display:none" class="overlay" onclick="toggle_elem()">
+    </div>
+
+    <div id="about-overlay" style="visibility:hidden;" class="overlay">
+        <div class="center">
+            <h1 style="margin-left:10%; margin-right: 10%;">About</h1>
+            <hr style="height:2px; border-width:0; margin-left: 10%; margin-right: 10%; background-color:black;">
+            <p>
+              This project is an entry into the <a href="https://elchackathon2021.devpost.com/">ELC 2021 Hackathon</a>. 
+              The project's backend services allow users to query through OpenStreetMap (OSM) and request custom vector 
+              layers built on top of that data. 
+            </p>
+
+            <p>
+                <b style="color:#63d297;">In particular, this map aims to make transit access data transparent in a way standard transit specifications do not.</b>
+                This webpage offers a convenient graphic interface to explore and visualize OSM data that won't appear on other mapping platforms and
+                empower users to create custom layers based on their own queries.
+            </p>
+
+            <p>
+                The transit specification that you'll find on most transit apps (including Google and Apple Maps), <a href="https://developers.google.com/transit/gtfs">GTFS</a>, 
+                is a great standard! But it's 15 years old and has locked developers and municipalities into reporting 
+                only the most basic accessibility data for stations and routes (GTFS only requires "wheelchair access" as a boolean).
+            </p>
+            
+            <p>
+              Because OSM is open source and relies on contributions from individuals rather than municipalities, it can 
+              expose incredibly detailed, high quality data. This brings me to my secondary goal: <b style="color:#63d297;">To encourage you to interact with this map an consider contributing data to the OSM project!</b>
+            </p>
+
+            <hr style="margin-left: 10%; margin-right: 10%; height:2px; border-width:0; background-color:black;">
+            <p>
+              I'd recommend starting with the <a href="./docs/pages/docs.html">layer creation documentation<a> to see some examples
+              of custom layers that can be built with this tool. If you'd like to learn more about the project in detail, consider reading any of the following:
+            </p>
+
+            <p>
+              <ul>
+                <li> A diagram of the system's architecture; I use some of the following core resources, but a full diagram is available <a href="./docs/pages/arch.pdf">here</a>.
+                  <ul>
+                  <li><code style="color:#202729" >AWS EC2, ECR, and ECS</code>&mdash; For hosting a PostgreSQL database instance with <a href="https://postgis.net/">PostGIS</a> and <a href="https://www.postgresql.org/docs/13/hstore.html">HStore</a>
+                  <li><a href="https://download.geofabrik.de/"> GeoFabrik</a> &mdash; For providing a free mirror to OSM data</li>
+                  <li><a href="https://carto.com/basemaps/"> Carto</a> &mdash; For static image tiles</li>
+                  </ul>
+                </li>
+                <li><a href="https://github.com/DMW2151/urban-eureka"> Project Github repo</a></li>
+                <li><a href="https://devpost.com/software/elc_transit_access_tileserver"> Project DevPost page</a></li>
+              </ul>
+            </p>
+          </p>
+          <hr style="margin-left: 10%; margin-right: 10%; height:2px; border-width:0; background-color:black;">
+          <p>
+              Contribute Data to <a href="https://wiki.openstreetmap.org/wiki/Join_the_community">OSM</a>!
+          </p>
+                
+
+        </div>
+    </div>
+
+    <div id="rules-overlay" style="visibility:hidden;" class="overlay" >
+        <div class="center">
+            <h1 style="margin-left:10%; margin-right: 10%;">Create New Layer</h1>
+            <hr style="height:2px; border-width:0; margin-left: 10%; margin-right: 10%; background-color:black;">
+          <p> If you haven't already, consider taking a look at the <a href="./docs/pages/docs.html">Layer Creation Documentation<a> to see some example layers and their corresponding json definitions.</a></p>
+          <p>
+            <textarea id="filter-json" placeholder="JSON Filter Definition..." style="resize: none;" onfocusout="prettyPrint()" cols=80 rows=16></textarea>
+            <span>
+              <input id="layer-hash-input" placeholder="Filter Hash (Copies on Click)" style="resize: none;" onclick="copyHash()"></input>
+            </span>
+          </p>
+          <p>
+          <span>
+              <button id='enable-filter-toggle'>Enable Filter</button>
+              <button id='apply-layer-hash'>Apply Layer Hash</button>
+              <button id='clear-filter-toggle'>Clear Filters</button>
+          </span>
+          </p>
+        </div>
+    </div>
+
+    <div id="popup" class="ol-popup">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content"></div>
+    </div>
+    
+    <!-- For Faster Load?? -->
+    <script src="./js/bundle.js"></script>
+    <script src="./js/utility.js"></script>
+    
+  </body>
+</html>
+
+

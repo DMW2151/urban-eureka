@@ -13,6 +13,7 @@ function copyHash() {
     );
 }
 
+
 // Allow use of arrows + shift && arrows for navigation...
 function keyboard_navig(event){
 

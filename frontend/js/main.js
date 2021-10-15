@@ -7,11 +7,13 @@ import {Style, Stroke, Fill, Circle} from 'ol/style';
 import MVT from 'ol/format/MVT.js';
 import Overlay from 'ol/Overlay';
 import {ScaleLine, defaults as defaultControls} from 'ol/control';
+import {transformExtent} from 'ol/proj';
 
 // Container for object labels...
 const container = document.getElementById('popup');
 const content = document.getElementById('popup-content');
 var currentLayer = "point"
+
 
 // Default Source - Query our backend service - api.maphub.dev - for geometry data
 var src = new VectorTileSource({
@@ -19,6 +21,7 @@ var src = new VectorTileSource({
   attributions: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
   url: 'https://api.maphub.dev/point/{z}/{x}/{y}'
 })
+
 
 // Adjust URL
 function urlAdjust(){
@@ -84,10 +87,10 @@ var mainlayer = new VectorTileLayer({
   style: new Style({
     image: new Circle({
       radius: 2.5,
-      fill: new Fill({ color: 'black'}),
+      fill: new Fill({ color: '#202729'}),
     }),
     stroke: new Stroke({
-      color: '#204068',
+      color: '#202729',
       width: 1.25
     })
   }),
@@ -172,6 +175,24 @@ filter_toggle.addEventListener(
   'click', enableFilter.bind(null)
 )
 
+/* OSM contribute - Bind OSM redirect */
+const helposm = document.getElementById('contrib-osm');
+
+function gotoOSM() {
+
+  // Go to `https://www.openstreetmap.org/edit#map=16/40.6722/-73.9735`
+  var extent = map.getView().calculateExtent()
+  var coords = transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
+  var zoom = map.getView().getZoom()
+
+  // Redirect
+  location.href = `https://www.openstreetmap.org/edit#map=${zoom}/${(coords[1] + coords[3])/2}/${(coords[0] + coords[2])/2}`;  
+}
+
+helposm.addEventListener(
+  'click', gotoOSM.bind(null)
+)
+
 /* Map Updates - Remove Filter (e.g. /point/z/y/x?filter=XXXXX -> /point/z/y/x) */
 const clear_filter_toggle = document.getElementById('clear-filter-toggle');
 
@@ -202,6 +223,7 @@ function hashToLayer(){
 layerHash.addEventListener(
   'click', hashToLayer.bind(null)
 )
+
 
 // Apply pop-up on hover - Allow user to see the obj tags...
 map.on('pointermove', function(evt) {
