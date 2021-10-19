@@ -8,20 +8,20 @@
     </head>
     <body> 
     <div class="topnav">
-        <div class="pointer" onclick="toggle_elem('about-overlay')"> About </div>
-        <div class="pointer" onclick="toggle_elem('rules-overlay')"> Apply Layer Filter</div>
-        <div class="pointer dropdown"> Select Object Layer
-            <div class="pointer dropdown-content">
-              <button class="pointer switcher" value="line">Lines</button>
-              <button class="pointer switcher" value="roads">Roads</button>
-              <button class="pointer switcher" value="point">Points</button>
-              <button class="pointer switcher" value="polygon">Polygon</button>
+      <div title="about-overlay-btn" alt="about-overlay-btn" aria-label="Open About Overlay" class="pointer" tabindex="0" onkeydown="toggleWrapper('about-overlay')" onclick="toggle_elem('about-overlay')">About</div>
+      <div title="rules-overlay-btn" alt="rules-overlay-btn" aria-label="Open Rules Overlay" class="pointer" tabindex="0" onkeydown="toggleWrapper('rules-overlay')" onclick="toggle_elem('rules-overlay')">Apply Layer Filter</div>
+        <div id="swap-layer" title="swap-layer-btn" alt="swap-layer-btn" aria-label="Swap Active Layer" class="pointer dropdown" tabindex="0"> Select Object Layer
+            <div tabindex="0" aria-label="Main Navigation" role="menu" class="pointer dropdown-content">
+              <button alt="activate-lines-btn" aria-label="Activate Lines Button" class="pointer switcher" tabindex="0" value="line">Lines</button>
+              <button alt="activate-roads-btn" aria-label="Activate Roads Button" class="pointer switcher" tabindex="0" value="roads">Roads</button>
+              <button alt="activate-points-btn" aria-label="Activate Points Button" class="pointer switcher" tabindex="0" value="point">Points</button>
+              <button alt="activate-polygon-btn" aria-label="Activate Polygon Button" class="pointer switcher" tabindex="0" value="polygon">Polygon</button>
             </div>
         </div>
-        <div id='contrib-osm' class="pointer">Contribute Data to OSM</div>
+        <div id='contrib-osm' title="Contribute to OSM" alt="contrib-osm-btn" aria-label="Contribute to OSM" class="pointer" tabindex="0">Contribute Data to OSM</div>
     </div>
 
-    <div id="map" onkeydown="keyboard_navig(event)" tabindex="0">
+    <div id="map" aria-label="Map" alt="Map" onkeydown="keyboard_navig(event)" tabindex="0">
     </div>
     
     <div id="overlay" style="display:none" class="overlay" onclick="toggle_elem()">
@@ -70,7 +70,7 @@
                   </ul>
                 </li>
                 <li><a href="https://github.com/DMW2151/urban-eureka"> Project Github repo</a></li>
-                <li><a href="https://devpost.com/software/elc_transit_access_tileserver"> Project DevPost page</a></li>
+                <li><a href="https://devpost.com/software/tiles-maphub"> Project DevPost page</a></li>
               </ul>
             </p>
           </p>
@@ -79,7 +79,6 @@
               Contribute Data to <a href="https://wiki.openstreetmap.org/wiki/Join_the_community">OSM</a>!
           </p>
                 
-
         </div>
     </div>
 
@@ -91,7 +90,7 @@
           <p>
             <textarea id="filter-json" placeholder="JSON Filter Definition..." style="resize: none;" onfocusout="prettyPrint()" cols=80 rows=16></textarea>
             <span>
-              <input id="layer-hash-input" placeholder="Filter Hash (Copies on Click)" style="resize: none;" onclick="copyHash()"></input>
+              <input id="layer-hash-input" placeholder="Filter Hash" style="resize: none;" onclick="copyHash()"></input>
             </span>
           </p>
           <p>

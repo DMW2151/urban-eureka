@@ -139,6 +139,7 @@ const buttons = document.getElementsByClassName('switcher');
 const matchfilter = (element) => element.match(/http:.+filter=[a-zA-Z0-9]+/g) != null
 
 function updateBaseLayer(path) {
+
   var currentFilter = document.getElementById('layer-hash-input').value
   currentLayer = path
 
@@ -157,8 +158,12 @@ for (let i = 0, ii = buttons.length; i < ii; ++i) {
   button.addEventListener(
     'click', updateBaseLayer.bind(null, button.value)
   );
-}
 
+  button.addEventListener(
+    'keydown', updateBaseLayer.bind(null, button.value)
+  );
+
+}
 
 /* Map Updates - Apply Filter (e.g.  /point/z/y/x -> /point/z/y/x?filter=XXXXX) */
 const filter_toggle = document.getElementById('enable-filter-toggle');
@@ -178,6 +183,12 @@ filter_toggle.addEventListener(
 /* OSM contribute - Bind OSM redirect */
 const helposm = document.getElementById('contrib-osm');
 
+function gotoOSMWrapper(event) {
+  if ((event.which == 13) || (event.keynum == 13)) {
+    gotoOSM();
+  }
+}
+
 function gotoOSM() {
 
   // Go to `https://www.openstreetmap.org/edit#map=16/40.6722/-73.9735`
@@ -191,6 +202,10 @@ function gotoOSM() {
 
 helposm.addEventListener(
   'click', gotoOSM.bind(null)
+)
+
+helposm.addEventListener(
+  'keydown', gotoOSMWrapper.bind(event)
 )
 
 /* Map Updates - Remove Filter (e.g. /point/z/y/x?filter=XXXXX -> /point/z/y/x) */

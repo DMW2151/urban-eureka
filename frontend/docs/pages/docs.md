@@ -134,10 +134,10 @@ The "Apply Layer Filter" interface has two buttons that make communicating custo
 
 * A button labelled **Enable Filter** filters all requests made to `https://tiles.maphub.dev/` with the logic currently in the JSON definition box. Clicking this button again will disable the filter. This parameter is (not so cleverly) just the `base64` encoding of the filter JSON. While this is not the most elegant solution, it allows for quick sharing of layer definitions.
 
-* After you enter a JSON definition, a box below the main JSON area will populate with the b64 encoding of the layer. The **Apply Layer Hash** button reverses this, and takes whatever content is in the hash area and populates the JSON rule. For example, If a colleague shares the string below I can drop it into the b64 box, and decode it into the JSON definition from figure X.X earlier in this document.
+* After you enter a JSON definition, a box below the main JSON area will populate with the b64 encoding of the layer. The **Apply Layer Hash** button reverses this, and takes whatever content is in the hash area and populates the JSON rule. For example, If a colleague shares the string below I can drop it into the b64 box, and decode it into the JSON definition from presented for resturants earlier in this document.
 
 Example String:
-`WwogIHsKICAgICJjb25kaXRpb24iOiAibGlrZSIsCiAgICAidGFncyI6IFsKICAgICAgImN1aXNpbmUiCiAgICBdLAogICAgInZhbHVlIjogIiphbiIKICB9Cl0=`
+`WwogIHsKICAgICJjb25kaXRpb24iOiAibGlrZSIsCiAgICAidGFncyI6IFsKICAgICAgImN1aXNpbmUiCiAgICBdLAogICAgInZhbHVlIjogIiVhbiIKICB9Cl0=`
 
 ![Fig 1a - Before Apply Hash](./../images/hash_1a.png)
 

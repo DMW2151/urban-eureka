@@ -40,6 +40,14 @@ function keyboard_navig(event){
     }
 }
 
+function toggleWrapper(e){
+    var keynum = event.keyCode;
+    // If down.,,,
+    if ((keynum == 40)){
+        toggle_elem(e);
+    }
+}
+
 // Toggle overlay status for about + layer definition pages...
 function toggle_elem(elemid) {
 
