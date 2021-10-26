@@ -2,6 +2,9 @@
 
 This project is an entry into the ELC Hackathon. The project's backend services allow users to query through hundreds of GB of OpenStreetMap (OSM) and request custom vector layers built on top of this data. The [webpage](https://tiles.maphub.dev/map.html) offers a convenient graphic interface to explore and visualize your custom layers. Consider any/all of the following resources to acquaint yourself with this project:
 
+NOTE: **Apologies, but the application has been tested on Mozilla Firefox >=v92.0, other browsers may not display w/ live map interaction properly**
+
+
 - [Website](https://tiles.maphub.dev/map.html) (Core API available thru October 29th)
 - [Demonstration](https://youtu.be/cmUBzga_xgM) Video
 - [Documentation](https://tiles.maphub.dev/docs/pages/docs.html) for layer creation syntax
